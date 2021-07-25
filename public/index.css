@@ -1,0 +1,82 @@
+.monitor {
+    margin-bottom: 1rem;
+}
+
+.monitor span.completed {
+    text-decoration: line-through;
+}
+
+.monitor label {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    background: #f3f3f3;
+    padding: 1rem;
+    font-size: 1rem;
+}
+.on td {
+    color: rgb(119, 221, 119);
+}
+
+.monitor i {
+    z-index: 2;
+}
+
+
+/*table {
+    border-collapse: collapse;  /* Убираем двойные линии между ячейками
+    width: 300px; /* Ширина таблицы
+}
+th, td {
+    border: 1px solid black; /* Параметры рамки
+    text-align: center; /* Выравнивание по центру
+    padding: 4px; /* Поля вокруг текста
+
+}
+th {
+    background: #fc0; /* Цвет фона ячейки
+    height: 40px; /* Высота ячеек
+    vertical-align: bottom; /* Выравнивание по нижнему краю
+    padding: 0; /* Убираем поля вокруг текста
+
+}*/
+
+
+
+.form_radio {
+    margin-bottom: 10px;
+}
+.form_radio input[type=radio] {
+    display: none;
+}
+.form_radio label {
+    display: inline-block;
+    cursor: pointer;
+    position: relative;
+    padding-left: 25px;
+    margin-right: 0;
+    line-height: 18px;
+    user-select: none;
+}
+.form_radio label:before {
+    content: "";
+    display: inline-block;
+    width: 17px;
+    height: 18px;
+    position: absolute;
+    left: 0;
+    bottom: 1px;
+
+}
+
+/* Hover */
+.form_radio label:hover:before {
+    filter: brightness(120%);
+}
+
+/* Disabled */
+.form_radio input[type=radio]:disabled + label:before {
+    filter: grayscale(100%);
+}

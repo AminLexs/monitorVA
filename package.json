@@ -1,0 +1,36 @@
+{
+    "name": "supervizer",
+    "preferGlobal": "true",
+    "version": "0.3.9",
+    "engines": {
+        "node": ">=0.10"
+    },
+    "description": "NodeJS Application Management",
+    "main": "index.js",
+    "bin": {
+        "monitorVA": "bin/monitor-client",
+        "monitor-server": "./bin/monitor-server"
+    },
+    "dependencies": {
+        "body-parser": "1.14.1",
+        "browserify": "^17.0.0",
+        "chart.js": "^2.7.3",
+        "cli-color": "1.1.0",
+        "cli-table": "0.3.1",
+        "commander": "1.2.0",
+        "d3": "^6.6.1",
+        "express": "4.13.3",
+        "express-handlebars": "^5.2.1",
+        "firebase": "^8.5.0",
+        "firebase-admin": "^9.8.0",
+        "nodemailer": "^6.6.0",
+        "pidusage": "^2.0.21",
+        "request": "2.74.0",
+        "usage": "0.7.1"
+    },
+    "devDependencies": {
+        "mocha": "1.x",
+        "should": ""
+    },
+    "license": "MIT"
+}
