@@ -80,3 +80,7 @@ th {
 .form_radio input[type=radio]:disabled + label:before {
     filter: grayscale(100%);
 }
+.dropdown-content{
+    width: max-content !important;
+    height:auto !important;
+}

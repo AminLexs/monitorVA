@@ -26,7 +26,7 @@ const hbs = exphbs.create({
 	defaultLayout: 'main',//'auth',//
 	extname: 'hbs'
 })
-//hbs.register('toHuman', );
+
 server.engine('hbs',hbs.engine)
 server.set('view engine', 'hbs')
 server.set('views','../views')

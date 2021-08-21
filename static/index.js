@@ -190,6 +190,8 @@ function getMonit(){
         success: function (response) {
             $('#content').empty()
             $('#Header').html("Мониторинг приложений")
+            var rowElement = document.createElement('tr');
+
             var inputElement = document.createElement('canvas');
             inputElement.id = 'CanvasCPU'
             inputElement.width = 600

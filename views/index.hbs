@@ -2,7 +2,13 @@
 <button type="submit" onclick="startStop()" id="btnStartStop" class="btn" style="display: none">Запуск/Остановка</button>
 <button type="submit" onclick="getAdd()" id="btnAdd"  class="btn" style="display: none">Добавление</button>
 <button type="submit" onclick="getEdit()" id="btnEdit"  class="btn" style="display: none">Редактирование</button>
-<button type="submit" onclick="getList()" id="btnList"  class="btn" style="display: none">Показать список</button>
+
+<button   id="btnList"  class="dropdown-trigger btn" data-target='dropdown1' style="display: none">Показать список</button>
+<ul id='dropdown1' class='dropdown-content'>
+    <li><a onclick="getList()">Снимков</a></li>
+    <li><a >Контейнеров</a></li>
+</ul>
+
 <button type="submit" onclick="getMonit()" id="btnMonit"  class="btn" style="display: none">Мониторинг</button>
 <h3 id="Header"></h3>
 <div id="content">
@@ -23,6 +29,11 @@
     <!--  </form> -->
  </div>
 
-
+<script>
+    $(document).ready(function(){
+        $('.modal').modal();
+        $('.dropdown-trigger').dropdown();
+    });
+</script>
 
 
