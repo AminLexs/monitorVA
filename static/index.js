@@ -111,32 +111,63 @@ function listFormat ( type, value ) {
     return ''
 }
 
-function getList () {
+function getImageList(){
     $.ajax({
         url: '/apps/list',
         method: 'POST',
-        data:{uid:uid},
+        data:{uid:uid, imagelist:true},
         success: function (response) {
             $('#content').empty()
-            $('#Header').html("Список приложений")
-            var inputElement = document.createElement('table');
-            inputElement.id = 'listTable'
-            inputElement.className = 'centered'
-            document.getElementById("content").appendChild(inputElement);
             isMonit=false
             if (timerId!=null){
                 clearInterval(timerId)
             }
-            var toTable='<thead><tr><th>Id</th><th>Имя приложения</th><th>PID</th><th>Скрипт запуска</th><th>Группа</th><th>Статус</th> ' +
-                '<th>Доступность</th><th>Хост</th><th>Порт</th><th>Время работы</th></tr></thead><tbody>'
-            appsName=[]
+            $('#Header').html("Список снимков")
+            var tableElement = document.createElement('table');
+            tableElement.id = 'listTable'
+            tableElement.className = 'centered'
+            document.getElementById("content").appendChild(tableElement);
+
+            var toTable='<thead><tr><th>Название снимка</th><th>Версия</th><th>Размер</th><th>Создан</th> ' +
+                '</tr></thead><tbody>'
             JSON.parse(response)['data'].forEach(element =>{
-                appsName.push(element.name)
-                    toTable+= '<tr><td>'+ element.id +'</td><td>' +element.name+ '</td><td>'+
-                        listFormat("pid",element.pid)+ '</td><td>'+listFormat("script",element.script)+'</td><td>'+
-                    element.group +'</td><td '+ (element.status == 'up' ? "style=\"color:#77DD77\"" : "style=\"color:red\"")+ '>'+
-                        element.status+'</td><td '+ (element.enabled == true ? "style=\"color:#77DD77\"" : "style=\"color:red\"")+ '>'+
-                        element.enabled + '</td><td>' + element.host + '</td><td>' + listFormat("port",element.port)+ '</td> <td>'+ listFormat('uptime', element.status == 'up' ? Date.now() - element.started : null) + '</td></tr>'
+                    toTable+= '<tr><td>' +element.name+ '</td><td>'+element.version+'</td><td>'+
+                        listFormat("memory",element.size)  +'</td> <td>'+ (new Date(+element.created * 1000)).toString() + '</td></tr>'
+                }
+            )
+            toTable+='</tbody>'
+            $('#listTable').append(toTable)
+        }
+    })
+}
+
+function getList () {
+    $.ajax({
+        url: '/apps/list',
+        method: 'POST',
+        data:{uid:uid, imagelist:false},
+        success: function (response) {
+            $('#content').empty()
+            isMonit=false
+            if (timerId!=null){
+                clearInterval(timerId)
+            }
+            $('#Header').html("Список контейнеров")
+
+            var inputElement = document.createElement('table');
+            inputElement.id = 'listTable'
+            inputElement.className = 'centered'
+            document.getElementById("content").appendChild(inputElement);
+
+            var toTable='<thead><tr><th>Имя контейнера</th><th>Имя снимка</th><th>Статус</th><th>Публичный порт</th><th>Приватный порт</th> ' +
+                '<th>Создан</th></tr></thead><tbody>'
+           // appsName=[]
+            JSON.parse(response)['data'].forEach(element =>{
+             //   appsName.push(element.name)
+                //'+ (element.status == 'up' ? "style=\"color:#77DD77\"" : "style=\"color:red\"")+ '
+                    toTable+= '<tr><td>'+ element.name +'</td><td>' +element.image+ '</td><td>'+element.status+
+                        '</td><td>'+element?.ports[0]?.PublicPort+'</td><td>'+element?.ports[0]?.PrivatePort
+                        +'</td><td>'+ (new Date(+element.created * 1000)).toString() + '</td></tr>'
                 }
             )
             toTable+='</tbody>'
@@ -909,6 +940,7 @@ global.getEdit = getEdit
 global.getAdd = getAdd
 global.ShowSettings=ShowSettings
 global.getList = getList
+global.getImageList = getImageList
 global.getMonit = getMonit
 global.startStop = startStop
 global.StartApp = StartApp
