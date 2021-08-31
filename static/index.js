@@ -346,7 +346,7 @@ function startStop(){
     $.ajax({
         url: '/apps/list',
         method: 'POST',
-        data:{uid:uid},
+        data:{uid:uid,imagelist:false},
         success: function (response) {
             $('#content').empty()
             var inputElement = document.createElement('ul');
@@ -539,7 +539,7 @@ function buildFormAddEdit(){
     document.getElementById("content").appendChild(formElement);
 }
 
-function getAdd(){
+function getAdd(isImage){
     $('#content').empty()
     $('#Header').html("Добавление приложения")
     if (timerId!=null){
@@ -843,20 +843,20 @@ function getGroups(data){
     )
 }
 
-function getEdit(){
+function getEdit(isImage){
     $.ajax({
         url: '/apps/list',
         method: 'POST',
-        data:{uid:uid},
+        data:{uid:uid,imagelist:isImage},
         success: function (response) {
             $('#content').empty()
             var inputElement = document.createElement('ul');
             inputElement.id = 'listManage'
             document.getElementById("content").appendChild(inputElement);
             var h4Element = document.createElement('h4');
-            h4Element.innerHTML = "Приложения:"
+            h4Element.innerHTML = (isImage)? "Снимки:":'Контейнеры'
             document.getElementById("listManage").appendChild(h4Element);
-            $('#Header').html("Редактирование приложений")
+            $('#Header').html("Редактирование "+ ((isImage)? "снимков:":'контейнеров'))
             if (timerId!=null){
                 clearInterval(timerId)
             }
@@ -931,19 +931,6 @@ function appEdit(app){
 
    // document.getElementById("name").val(app.name)
 }
-/*<form>
-    <p><input placeholder="Название задания" name="nametask"></p>
-    <p><textarea placeholder="Описание задания"></textarea></p>
-    <p> Статус задачи:
-        <input type="radio" name="status" id="1" checked="checked"> <label htmlFor="1">В процессе</label>
-            <input type="radio" id="2" name="status"><label htmlFor="2">Выполнено</label>
-                <input type="radio" id="3" name="status"><label htmlFor="3">Провалено</label>
-    </p>
-    <p> Ожидаемая дата выполнения: <input type="date" placeholder="Название задачи" id="date" name="date"/>
-        <p><input type="file" name="f" multiple>
-            <p><input type="submit" value="Добавить новую задачу"
-                      formAction="server.js" formMethod="post"></p>
-</form>*/
 
 
 global.setUserId = setUserId

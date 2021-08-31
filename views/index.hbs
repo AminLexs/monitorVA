@@ -1,10 +1,20 @@
 
 <button type="submit" onclick="startStop()" id="btnStartStop" class="btn" style="display: none">Запуск/Остановка</button>
-<button type="submit" onclick="getAdd()" id="btnAdd"  class="btn" style="display: none">Добавление</button>
-<button type="submit" onclick="getEdit()" id="btnEdit"  class="btn" style="display: none">Редактирование</button>
 
-<button   id="btnList"  class="dropdown-trigger btn" data-target='dropdown1' style="display: none">Показать список</button>
+<button type="submit"  id="btnAdd"  class="dropdown-trigger btn" data-target='dropdown1' style="display: none">Добавление</button>
 <ul id='dropdown1' class='dropdown-content'>
+    <li><a onclick="getAdd(true)">Снимка</a></li>
+    <li><a onclick="getAdd(false)">Контейнера</a></li>
+</ul>
+
+<button type="submit" id="btnEdit"  class="dropdown-trigger btn" data-target='dropdown2' style="display: none">Редактирование</button>
+<ul id='dropdown2' class='dropdown-content'>
+    <li><a onclick="getEdit(true)">Снимка</a></li>
+    <li><a onclick="getEdit(false)">Контейнера</a></li>
+</ul>
+
+<button   id="btnList"  class="dropdown-trigger btn" data-target='dropdown3' style="display: none">Показать список</button>
+<ul id='dropdown3' class='dropdown-content'>
     <li><a onclick="getImageList()">Снимков</a></li>
     <li><a onclick="getList()">Контейнеров</a></li>
 </ul>
