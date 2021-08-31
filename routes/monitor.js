@@ -77,8 +77,10 @@ router.post('/apps/monit', function (req, res) {
         monitApps: monitApps
     })*/
    // console.log(JSON.stringify(main.monit(getResult(req)))[0])
-
-    res.end(JSON.stringify(main.monit(getResult(req))))
+    main.monit(getResult(req)).then(result=> {
+        res.end(JSON.stringify(result))
+    })
+    //res.end(JSON.stringify(main.monit(getResult(req))))
     //res.end(JSON.stringify(main.monit(getResult(req))))
 })
 

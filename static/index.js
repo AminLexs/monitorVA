@@ -3,7 +3,7 @@ var isMonit=false
 var barChart;
 var barChart2;
 var uid
-var appsName
+
 function setUserId(userid){
     uid = userid
 }
@@ -161,9 +161,8 @@ function getList () {
 
             var toTable='<thead><tr><th>Имя контейнера</th><th>Имя снимка</th><th>Статус</th><th>Публичный порт</th><th>Приватный порт</th> ' +
                 '<th>Создан</th></tr></thead><tbody>'
-           // appsName=[]
             JSON.parse(response)['data'].forEach(element =>{
-             //   appsName.push(element.name)
+
                 //'+ (element.status == 'up' ? "style=\"color:#77DD77\"" : "style=\"color:red\"")+ '
                     toTable+= '<tr><td>'+ element.name +'</td><td>' +element.image+ '</td><td>'+element.status+
                         '</td><td>'+element?.ports[0]?.PublicPort+'</td><td>'+element?.ports[0]?.PrivatePort
@@ -177,11 +176,11 @@ function getList () {
     });
 }
 
-function fetchData( ) {
+function fetchData(containersId ) {
     $.ajax({
         url: '/apps/monit',
         method:   'POST',
-        data: {appsName:appsName},
+        data: {containersId:containersId},
         //  dataType: 'json',
         success:  function(rawData) {
             if(isMonit) {
@@ -213,122 +212,134 @@ function fetchData( ) {
     });
 }
 var timerId;
+
 function getMonit(){
     $.ajax({
-        url: '/apps/monit',
-        data: {appsName:appsName},
+        url: '/apps/list',
         method: 'POST',
+        data:{uid:uid, imagelist:false},
         success: function (response) {
-            $('#content').empty()
-            $('#Header').html("Мониторинг приложений")
-            var rowElement = document.createElement('tr');
+           let containersId = JSON.parse(response)['data'].map(elem => elem.Id)
 
-            var inputElement = document.createElement('canvas');
-            inputElement.id = 'CanvasCPU'
-            inputElement.width = 600
-            inputElement.height = 400
-            document.getElementById("content").appendChild(inputElement);
-            inputElement = document.createElement('canvas');
-            inputElement.id = 'CanvasMemory'
-            inputElement.width = 600
-            inputElement.height = 400
-            document.getElementById("content").appendChild(inputElement);
-            isMonit=true
-            if (timerId!=null){
-                clearInterval(timerId)
-            }
-            if(barChart!=null & barChart2!=null) {
-                barChart.clear()
-                barChart2.clear()
-                barChart.destroy()
-                barChart2.destroy()
-            }
+            $.ajax({
+                url: '/apps/monit',
+                data: {containersId:containersId},
+                method: 'POST',
+                success: function (response) {
+                    $('#content').empty()
+                    $('#Header').html("Мониторинг приложений")
+                    var rowElement = document.createElement('tr');
 
-
-            var CanvasCPU = document.getElementById("CanvasCPU");
-            var CanvasMemory = document.getElementById("CanvasMemory");
-
-            barChart = new Chart(CanvasCPU, {
-                type: 'line',
-                label:"Memory",
-                data: {
-                    labels: ["0s"],
-                    datasets: []
-                },
-                options: {
-                    responsive: false,
-
-                    scales: {
-                        xAxes: [{
-                            scaleLabel: {
-                                display: true,
-                                labelString: 'Время'
-                            }
-                        }],
-                        yAxes: [{
-                            scaleLabel: {
-                                display: true,
-                                labelString: 'Использование CPU, %'
-                            }
-                        }]
+                    var inputElement = document.createElement('canvas');
+                    inputElement.id = 'CanvasCPU'
+                    inputElement.width = 600
+                    inputElement.height = 400
+                    document.getElementById("content").appendChild(inputElement);
+                    inputElement = document.createElement('canvas');
+                    inputElement.id = 'CanvasMemory'
+                    inputElement.width = 600
+                    inputElement.height = 400
+                    document.getElementById("content").appendChild(inputElement);
+                    isMonit=true
+                    if (timerId!=null){
+                        clearInterval(timerId)
                     }
+                    if(barChart!=null & barChart2!=null) {
+                        barChart.clear()
+                        barChart2.clear()
+                        barChart.destroy()
+                        barChart2.destroy()
+                    }
+
+
+                    var CanvasCPU = document.getElementById("CanvasCPU");
+                    var CanvasMemory = document.getElementById("CanvasMemory");
+
+                    barChart = new Chart(CanvasCPU, {
+                        type: 'line',
+                        label:"Memory",
+                        data: {
+                            labels: ["0s"],
+                            datasets: []
+                        },
+                        options: {
+                            responsive: false,
+
+                            scales: {
+                                xAxes: [{
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: 'Время'
+                                    }
+                                }],
+                                yAxes: [{
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: 'Использование CPU, %'
+                                    }
+                                }]
+                            }
+                        }
+                    });
+
+                    barChart2 = new Chart(CanvasMemory, {
+                        type: 'line',
+                        label:"Memory",
+                        data: {
+                            labels: ["0s"],
+                            datasets: []
+                        },
+                        options: {
+                            responsive: false,
+
+                            scales: {
+                                xAxes: [{
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: 'Время'
+                                    }
+                                }],
+                                yAxes: [{
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: 'Память, байты'
+                                    }
+                                }]
+                            }
+                        }
+                    });
+                    let colors =  ['rgba(255,99,132,0.6)', 'rgba(255,99,132,0.6)', 'rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)',
+                        'rgba(75, 192, 192, 0.6)', 'rgba(153, 102, 255, 0.6)', 'rgba(255, 159, 64, 0.6)',
+                        'rgba(255, 99, 132, 0.6)', 'rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)',
+                        'rgba(75, 192, 192, 0.6)', 'rgba(153, 102, 255, 0.6)'
+                    ]
+                    var i = 0
+                    JSON.parse(response)['data'].forEach(element => {
+                        barChart.data.datasets.push({
+                            label: element.name+'(PID:'+element.pid+')',
+                            data: [element.cpu],
+                            fill: false,
+                            backgroundColor: colors[i],
+                            borderColor: colors[i]
+                        })
+                        barChart2.data.datasets.push({
+                            label:  element.name+'(PID:'+element.pid+')',
+                            data: [element.mem],
+                            fill: false,
+                            backgroundColor: colors[i],
+                            borderColor: colors[i]
+                        })
+                        i > colors.length - 1 ? i = 0 : i++
+                    })
+                    barChart.update()
+                    barChart2.update()
+                    timerId = setInterval(fetchData, 2000, containersId)
                 }
             });
 
-            barChart2 = new Chart(CanvasMemory, {
-                type: 'line',
-                label:"Memory",
-                data: {
-                    labels: ["0s"],
-                    datasets: []
-                },
-                options: {
-                    responsive: false,
-
-                    scales: {
-                        xAxes: [{
-                            scaleLabel: {
-                                display: true,
-                                labelString: 'Время'
-                            }
-                        }],
-                        yAxes: [{
-                            scaleLabel: {
-                                display: true,
-                                labelString: 'Память, байты'
-                            }
-                        }]
-                    }
-                }
-            });
-            let colors =  ['rgba(255,99,132,0.6)', 'rgba(255,99,132,0.6)', 'rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)',
-                'rgba(75, 192, 192, 0.6)', 'rgba(153, 102, 255, 0.6)', 'rgba(255, 159, 64, 0.6)',
-                'rgba(255, 99, 132, 0.6)', 'rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)',
-                'rgba(75, 192, 192, 0.6)', 'rgba(153, 102, 255, 0.6)'
-            ]
-            var i = 0
-            JSON.parse(response)['data'].forEach(element => {
-                barChart.data.datasets.push({
-                    label: element.name+'(PID:'+element.pid+')',
-                    data: [element.cpu],
-                    fill: false,
-                    backgroundColor: colors[i],
-                    borderColor: colors[i]
-                })
-                barChart2.data.datasets.push({
-                    label:  element.name+'(PID:'+element.pid+')',
-                    data: [element.mem],
-                    fill: false,
-                    backgroundColor: colors[i],
-                    borderColor: colors[i]
-                })
-                i > colors.length - 1 ? i = 0 : i++
-            })
-            barChart.update()
-            barChart2.update()
-            timerId = setInterval(fetchData, 2000)
         }
-    });
+    })
+
 }
 
 function startStop(){
