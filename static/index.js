@@ -1,177 +1,44 @@
 var path = require('path')
+let utils = require('./Utils')
 var isMonit=false
-var barChart;
-var barChart2;
+var lineChartCPU;
+var lineChartMemory;
 var uid
 
 function setUserId(userid){
     uid = userid
 }
 
-function getHumanPeriod ( time ) {
-
-    var second = 1000
-    var minute = 60000
-    var hour = 3600000
-    var day = 86400000
-
-    var resultTime = time
-    var d, h, m, s
-    var result = ''
-
-    d = Math.floor(resultTime / day)
-    if (d > 0) {
-        resultTime = resultTime % day
+function ClearScreen(monitoring,header){
+    $('#content').empty()
+    if (timerId!=null){
+        clearInterval(timerId)
     }
-    h = Math.floor(resultTime / hour)
-    if (h > 0) {
-        resultTime = resultTime % hour
-    }
-    m = Math.floor(resultTime / minute)
-    if (m > 0) {
-        resultTime = resultTime % minute
-    }
-    s = Math.floor(resultTime / second)
-
-    if (d > 0) {
-        result += d + 'd '
-    }
-    if (h > 0) {
-        result += h + 'h '
-    }
-    if (m > 0) {
-        result += m + 'm '
-    }
-
-    result += s + 's'
-
-    return result
-}
-
-function getHumanBytes (bytes, precision) {
-    //console.log('bytes', bytes)
-
-    var kilobyte = 1024
-    var megabyte = kilobyte * 1024
-    var gigabyte = megabyte * 1024
-    var terabyte = gigabyte * 1024
-
-    if ((bytes >= 0) &&
-        (bytes < kilobyte)) {
-
-        return bytes + ' B'
-    }
-    else if ((bytes >= kilobyte) &&
-        (bytes < megabyte)) {
-
-        return (bytes / kilobyte).toFixed(precision) + ' KB'
-    }
-    else if ((bytes >= megabyte) &&
-        (bytes < gigabyte)) {
-
-        return (bytes / megabyte).toFixed(precision) + ' MB'
-    }
-    else if ((bytes >= gigabyte) &&
-        (bytes < terabyte)) {
-
-        return (bytes / gigabyte).toFixed(precision) + ' GB'
-    }
-    else if (bytes >= terabyte) {
-        return (bytes / terabyte).toFixed(precision) + ' TB'
-    }
-    else {
-        return bytes + ' B'
+    isMonit = monitoring
+    if(header!==undefined && typeof(header)==="string"){
+        $('#Header').html(header)
     }
 }
 
-function listFormat ( type, value ) {
-
-    switch (type) {
-        case 'script':
-            return value ? path.basename(value) : 'N/C'
-        case 'memory':
-            return value ? getHumanBytes(value) : 'N/C'
-        case 'uptime':
-            return value > 0 ? getHumanPeriod(value) : 'N/C'
-        case 'pid':
-            return value || 'N/C'
-        case 'host':
-            return value ? value.replace('http://',''): 'N/C'
-        case 'status':
-            return value == 'up' ? "up" : "down"
-        case 'enabled':
-            return value ? "yes" : "no"
-        case 'port':
-            return value || 'N/C'
-        case 'run':
-            return value != ':' ? value : 'N/C'
-        default:
-            return value
-    }
-    return ''
-}
-
-function getImageList(){
+function getList (isImageList) {
     $.ajax({
         url: '/apps/list',
         method: 'POST',
-        data:{uid:uid, imagelist:true},
+        data:{uid:uid, imagelist:isImageList},
         success: function (response) {
-            $('#content').empty()
-            isMonit=false
-            if (timerId!=null){
-                clearInterval(timerId)
+            let contentElements = JSON.parse(response)['data']
+            if (isImageList) {
+                ClearScreen(false, "Список снимков")
+                let headings = ['Название снимка', 'Версия', 'Размер', 'Создан']
+                let howToParse = [['name', 'version', 'size', 'created'], ['', '', 'memory', 'date']]
+                utils.createTable(headings, contentElements, howToParse)
+            } else {
+                ClearScreen(false, "Список контейнеров")
+                let headings = ['Имя контейнера', 'Имя снимка', 'Статус', 'Публичный порт','Приватный порт','Создан']
+                let howToParse = [['name', 'image', 'status', 'publicPort','privatePort','created'],
+                    ['', '','','','','date']]
+                utils.createTable(headings, contentElements, howToParse)
             }
-            $('#Header').html("Список снимков")
-            var tableElement = document.createElement('table');
-            tableElement.id = 'listTable'
-            tableElement.className = 'centered'
-            document.getElementById("content").appendChild(tableElement);
-
-            var toTable='<thead><tr><th>Название снимка</th><th>Версия</th><th>Размер</th><th>Создан</th> ' +
-                '</tr></thead><tbody>'
-            JSON.parse(response)['data'].forEach(element =>{
-                    toTable+= '<tr><td>' +element.name+ '</td><td>'+element.version+'</td><td>'+
-                        listFormat("memory",element.size)  +'</td> <td>'+ (new Date(+element.created * 1000)).toString() + '</td></tr>'
-                }
-            )
-            toTable+='</tbody>'
-            $('#listTable').append(toTable)
-        }
-    })
-}
-
-function getList () {
-    $.ajax({
-        url: '/apps/list',
-        method: 'POST',
-        data:{uid:uid, imagelist:false},
-        success: function (response) {
-            $('#content').empty()
-            isMonit=false
-            if (timerId!=null){
-                clearInterval(timerId)
-            }
-            $('#Header').html("Список контейнеров")
-
-            var inputElement = document.createElement('table');
-            inputElement.id = 'listTable'
-            inputElement.className = 'centered'
-            document.getElementById("content").appendChild(inputElement);
-
-            var toTable='<thead><tr><th>Имя контейнера</th><th>Имя снимка</th><th>Статус</th><th>Публичный порт</th><th>Приватный порт</th> ' +
-                '<th>Создан</th></tr></thead><tbody>'
-            JSON.parse(response)['data'].forEach(element =>{
-
-                //'+ (element.status == 'up' ? "style=\"color:#77DD77\"" : "style=\"color:red\"")+ '
-                    toTable+= '<tr><td>'+ element.name +'</td><td>' +element.image+ '</td><td>'+element.status+
-                        '</td><td>'+element?.ports[0]?.PublicPort+'</td><td>'+element?.ports[0]?.PrivatePort
-                        +'</td><td>'+ (new Date(+element.created * 1000)).toString() + '</td></tr>'
-                }
-            )
-            toTable+='</tbody>'
-            $('#listTable').append(toTable)
-
         }
     });
 }
@@ -187,23 +54,23 @@ function fetchData(containersId ) {
                 let data = JSON.parse(rawData)['data']
                 for (var i = 0; i < data.length; i++) {
 
-                    barChart.data.datasets[i].data.push(
+                    lineChartCPU.data.datasets[i].data.push(
                         {
-                            x: getHumanPeriod(barChart.data.labels.length * 2000),
+                            x: utils.getHumanPeriod(lineChartCPU.data.labels.length * 2000),
                             y: data[i]['cpu']
                         }
                     )
-                    barChart2.data.datasets[i].data.push(
+                    lineChartMemory.data.datasets[i].data.push(
                         {
-                            x: getHumanPeriod(barChart2.data.labels.length * 2000),
+                            x: utils.getHumanPeriod(lineChartMemory.data.labels.length * 2000),
                             y: data[i]['mem']
                         }
                     )
                 }
-                barChart.data.labels.push(getHumanPeriod(barChart.data.labels.length * 2000))
-                barChart2.data.labels.push(getHumanPeriod(barChart2.data.labels.length * 2000))
-                barChart.update()
-                barChart2.update()
+                lineChartCPU.data.labels.push(utils.getHumanPeriod(lineChartCPU.data.labels.length * 2000))
+                lineChartMemory.data.labels.push(utils.getHumanPeriod(lineChartMemory.data.labels.length * 2000))
+                lineChartCPU.update()
+                lineChartMemory.update()
             }
         },
         error: function (error){
@@ -226,103 +93,31 @@ function getMonit(){
                 data: {containersId:containersId},
                 method: 'POST',
                 success: function (response) {
-                    $('#content').empty()
-                    $('#Header').html("Мониторинг приложений")
-                    var rowElement = document.createElement('tr');
-
-                    var inputElement = document.createElement('canvas');
-                    inputElement.id = 'CanvasCPU'
-                    inputElement.width = 600
-                    inputElement.height = 400
-                    document.getElementById("content").appendChild(inputElement);
-                    inputElement = document.createElement('canvas');
-                    inputElement.id = 'CanvasMemory'
-                    inputElement.width = 600
-                    inputElement.height = 400
-                    document.getElementById("content").appendChild(inputElement);
-                    isMonit=true
-                    if (timerId!=null){
-                        clearInterval(timerId)
-                    }
-                    if(barChart!=null & barChart2!=null) {
-                        barChart.clear()
-                        barChart2.clear()
-                        barChart.destroy()
-                        barChart2.destroy()
+                    ClearScreen(true,"Мониторинг приложений")
+                    if(lineChartCPU!=null & lineChartMemory!=null) {
+                        lineChartCPU.clear()
+                        lineChartMemory.clear()
+                        lineChartCPU.destroy()
+                        lineChartMemory.destroy()
                     }
 
-
+                    utils.createCanvas('CanvasCPU')
+                    utils.createCanvas('CanvasMemory')
                     var CanvasCPU = document.getElementById("CanvasCPU");
                     var CanvasMemory = document.getElementById("CanvasMemory");
+                    lineChartCPU = utils.createLineChart(CanvasCPU,'CPU','Использование CPU, %')
+                    lineChartMemory = utils.createLineChart(CanvasMemory,'Memory','Память, байты')
 
-                    barChart = new Chart(CanvasCPU, {
-                        type: 'line',
-                        label:"Memory",
-                        data: {
-                            labels: ["0s"],
-                            datasets: []
-                        },
-                        options: {
-                            responsive: false,
-
-                            scales: {
-                                xAxes: [{
-                                    scaleLabel: {
-                                        display: true,
-                                        labelString: 'Время'
-                                    }
-                                }],
-                                yAxes: [{
-                                    scaleLabel: {
-                                        display: true,
-                                        labelString: 'Использование CPU, %'
-                                    }
-                                }]
-                            }
-                        }
-                    });
-
-                    barChart2 = new Chart(CanvasMemory, {
-                        type: 'line',
-                        label:"Memory",
-                        data: {
-                            labels: ["0s"],
-                            datasets: []
-                        },
-                        options: {
-                            responsive: false,
-
-                            scales: {
-                                xAxes: [{
-                                    scaleLabel: {
-                                        display: true,
-                                        labelString: 'Время'
-                                    }
-                                }],
-                                yAxes: [{
-                                    scaleLabel: {
-                                        display: true,
-                                        labelString: 'Память, байты'
-                                    }
-                                }]
-                            }
-                        }
-                    });
-                    let colors =  ['rgba(255,99,132,0.6)', 'rgba(255,99,132,0.6)', 'rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)',
-                        'rgba(75, 192, 192, 0.6)', 'rgba(153, 102, 255, 0.6)', 'rgba(255, 159, 64, 0.6)',
-                        'rgba(255, 99, 132, 0.6)', 'rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)',
-                        'rgba(75, 192, 192, 0.6)', 'rgba(153, 102, 255, 0.6)'
-                    ]
                     var i = 0
                     JSON.parse(response)['data'].forEach(element => {
-                        barChart.data.datasets.push({
+                        lineChartCPU.data.datasets.push({
                             label: element.name+'(PID:'+element.pid+')',
                             data: [element.cpu],
                             fill: false,
                             backgroundColor: colors[i],
                             borderColor: colors[i]
                         })
-                        barChart2.data.datasets.push({
+                        lineChartMemory.data.datasets.push({
                             label:  element.name+'(PID:'+element.pid+')',
                             data: [element.mem],
                             fill: false,
@@ -331,8 +126,8 @@ function getMonit(){
                         })
                         i > colors.length - 1 ? i = 0 : i++
                     })
-                    barChart.update()
-                    barChart2.update()
+                    lineChartCPU.update()
+                    lineChartMemory.update()
                     timerId = setInterval(fetchData, 2000, containersId)
                 }
             });
@@ -348,17 +143,15 @@ function startStop(){
         method: 'POST',
         data:{uid:uid,imagelist:false},
         success: function (response) {
-            $('#content').empty()
+            ClearScreen(false,"Запуск/Остановка приложений")
+
             var inputElement = document.createElement('ul');
             inputElement.id = 'listManage'
             document.getElementById("content").appendChild(inputElement);
             var h4Element = document.createElement('h4');
             h4Element.innerHTML = "Приложения:"
             document.getElementById("listManage").appendChild(h4Element);
-            $('#Header').html("Запуск/Остановка приложений")
-            if (timerId!=null){
-                clearInterval(timerId)
-            }
+
             JSON.parse(response)['data'].forEach(element => {
                 var liElement = document.createElement('li');
                 liElement.className = "monit"
@@ -608,11 +401,8 @@ function ShowSettings(  ){
         data: {uid:uid},
         success: function (response) {
             var settings = JSON.parse(response)['data'][0]
-            $('#content').empty()
-            $('#Header').html("Настройки")
-            if (timerId!=null){
-                clearInterval(timerId)
-            }
+            ClearScreen(false,"Настройки")
+
             var formElement = document.createElement('form');
             getRole().then(value=>{
                 if (value){
@@ -849,17 +639,15 @@ function getEdit(isImage){
         method: 'POST',
         data:{uid:uid,imagelist:isImage},
         success: function (response) {
-            $('#content').empty()
+            ClearScreen(false,"Редактирование "+ ((isImage)? "снимков:":'контейнеров'))
+
             var inputElement = document.createElement('ul');
             inputElement.id = 'listManage'
             document.getElementById("content").appendChild(inputElement);
             var h4Element = document.createElement('h4');
             h4Element.innerHTML = (isImage)? "Снимки:":'Контейнеры'
             document.getElementById("listManage").appendChild(h4Element);
-            $('#Header').html("Редактирование "+ ((isImage)? "снимков:":'контейнеров'))
-            if (timerId!=null){
-                clearInterval(timerId)
-            }
+
             JSON.parse(response)['data'].forEach(element => {
                     var liElement = document.createElement('li');
                     liElement.className = "monit"
@@ -938,7 +726,6 @@ global.getEdit = getEdit
 global.getAdd = getAdd
 global.ShowSettings=ShowSettings
 global.getList = getList
-global.getImageList = getImageList
 global.getMonit = getMonit
 global.startStop = startStop
 global.StartApp = StartApp

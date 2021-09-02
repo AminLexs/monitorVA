@@ -16,7 +16,7 @@ function Auth(){
         firebase.auth().signInWithEmailAndPassword($('#email').val(), $('#psw').val())
             .then(userCredential =>{
                 setUserId(userCredential.user.uid)
-                getList()
+                getList(true)
                 document.getElementById('btnStartStop').style.display = ""
                 document.getElementById('btnAdd').style.display = ""
                 document.getElementById('btnEdit').style.display = ""
