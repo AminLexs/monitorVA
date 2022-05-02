@@ -1,0 +1,124 @@
+#!/usr/bin/env node
+require('dotenv').config()
+const {firebase} = require('./services/dbService')
+const path = require('path')
+const monitorRoute = require('./routes/monitor')
+const express = require('express')
+const bodyParser = require('body-parser')
+const exphbs = require('express-handlebars')
+const {listFormat, getHumanPeriod} = require("./utils/dataFormattingUtils");
+const {showInfo, showError} = require("./utils/logUtils")
+const server = express()
+
+
+server.disable('x-powered-by')
+const hbs = exphbs.create({
+	helpers: {
+		toHuman: getHumanPeriod,
+		listFormat: listFormat,
+		checkUp: function(status , time) {
+			if (status==='down'){
+				return  null
+			}
+			return time;
+		}
+	},
+	defaultLayout: 'main',//'auth',//
+	extname: 'hbs'
+})
+
+server.engine('hbs',hbs.engine)
+server.set('view engine', 'hbs')
+server.set('views','./views')
+
+server.use(bodyParser.json())
+server.use(bodyParser.urlencoded({extended: true}))
+server.use(express.static(path.join((__dirname,'./public'))))
+server.use("/static", express.static('./static/'));
+server.use(monitorRoute)
+
+firebase.auth().signInWithEmailAndPassword("servermail@mail.ru","qwerty").then().catch(error=>{
+	console.log("Error getting documents: ", error);
+})
+/**
+ * API endpoints
+ * 
+ * COMMANDs		VERBs		URIs				Descriptions
+ * 
+ * 				GET   		/					Show server banner
+ * load			POST		/config/load		Load all apps from file
+ * save			POST		/config/save		Save all apps to file
+ * add			PUT			/apps				Add an app to run
+ * remove		DELETE		/apps				Stop and Remove an app
+ * start		POST		/app/start			Start an app
+ * startAll		POST		/apps/start			Start all apps
+ * stop			POST		/app/stop			Stop an app
+ * stopAll		POST		/apps/stop			Stop all apps
+ * restart		POST		/app/restart		Restart an app
+ * restartAll	POST		/apps/restart		Restart all apps
+ * list			POST		/apps/list			Get app state list
+ * monit		POST		/apps/monit			Monitor all apps
+ * secure		POST		/secure				Enable/Disable authentication
+ * enable		POST		/app/enable			Enable/Start an app
+ * disable		POST		/app/disable		Disable/Stop an app
+ * set			POST		/app				Set an app property		
+ * get			POST		/app				Get an app property
+ */
+
+// function getResult ( req ) {
+// 	req.body.ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
+// 	return req.body
+// }
+
+// /**
+//  * DELETE /apps
+//  */
+// server.delete('/apps', function (req, res) {
+//
+// 	//console.log( '[request]:\n' + ' - path: /apps\n - receive: ' + JSON.stringify(req.body) + '\n' )
+// 	res.end(JSON.stringify(main.remove(getResult(req))))
+// })
+
+// /**
+//  * GET /app
+//  */
+// server.get('/app', function (req, res) {
+//
+// 	//console.log( '[request]:\n' + ' - path: /app\n - receive: ' + JSON.stringify(req.body) + '\n' )
+// 	res.end(JSON.stringify(main.get(getResult(req))))
+// })
+
+// /**
+//  * POST /app/restart
+//  */
+// server.post('/app/restart', function (req, res) {
+//
+// 	//console.log( '[request]:\n' + ' - path: /app/restart\n - receive: ' + JSON.stringify(req.body) + '\n' )
+// 	res.end(JSON.stringify(main.restart(getResult(req))))
+// })
+//
+// /**
+//  * POST /apps/restart
+//  */
+// server.post('/apps/restart', function (req, res) {
+//
+// 	//console.log( '[request]:\n' + ' - path: /apps/restart\n - receive: ' + JSON.stringify(req.body) + '\n' )
+// 	res.end(JSON.stringify(main.restartAll(getResult(req))))
+// })
+
+server.all('*', function (req, res) {
+  	res.status(404).send('Not Found Server Error')
+})
+
+server.use(function (err, req, res, next) {  	
+  	res.status(500).send('Internal Server Error')
+  	showError('A fatal error occured')
+	console.error(err.stack)
+})
+
+process.on('close', function (code) {
+	showInfo('Monitor server stopped')
+})
+
+server.listen(process.env.port,process.env.host)
+showInfo('Monitor server started at (' + process.env.host + ':' + process.env.port + ')')

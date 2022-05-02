@@ -1,6 +1,7 @@
 const { Router } = require('express')
 const router = Router()
-const main = require('../lib/main')
+const containersManager = require('../services/containersManager')
+const containersMonitor = require('../services/containersMonitor')
 
 function getResult ( req ) {
     req.body.ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
@@ -34,7 +35,11 @@ router.post('/auth', function (req, res) {
 router.post('/app/start', function (req, res) {
 
     //console.log( '[request]:\n' + ' - path: /app/start\n - receive: ' + JSON.stringify(req.body) + '\n' )
-    res.end(JSON.stringify(main.start(getResult(req))))
+    containersManager.startContainer(getResult(req)).then(result=> {
+        res.end(JSON.stringify(result))
+    })
+    // const result =main.start(getResult(req))
+    // res.end(JSON.stringify(result))
 })
 
 /**
@@ -43,7 +48,10 @@ router.post('/app/start', function (req, res) {
 router.post('/app/stop', function (req, res) {
 
     //console.log( '[request]:\n' + ' - path: /app/stop\n - receive: ' + JSON.stringify(req.body) + '\n' )
-    res.end(JSON.stringify(main.stop(getResult(req))))
+    containersManager.stopContainer(getResult(req)).then(result=> {
+        res.end(JSON.stringify(result))
+    })
+   // res.end(JSON.stringify(main.stop(getResult(req))))
 })
 
 /**
@@ -58,7 +66,7 @@ router.post('/apps/list', function (req, res) {
         isList:true,
         apps: apps
     })*/
-        main.list(getResult(req)).then(result=>{
+    containersMonitor.list(getResult(req)).then(result=>{
         res.end(JSON.stringify(result))
     })
 
@@ -77,11 +85,9 @@ router.post('/apps/monit', function (req, res) {
         monitApps: monitApps
     })*/
    // console.log(JSON.stringify(main.monit(getResult(req)))[0])
-    main.monit(getResult(req)).then(result=> {
+    containersMonitor.monit(getResult(req)).then(result=> {
         res.end(JSON.stringify(result))
     })
-    //res.end(JSON.stringify(main.monit(getResult(req))))
-    //res.end(JSON.stringify(main.monit(getResult(req))))
 })
 
 /**
@@ -95,37 +101,37 @@ router.post('/config/load', function (req, res) {
     res.end(JSON.stringify(main.load(getResult(req))))
 })
 
-router.post('/config/crashsend', function (req, res) {
-
-    //console.log( '[request]:\n' + ' - path: /config/load\n - receive: ' + JSON.stringify(req.body) + '\n' )
-    main.SetCrashSend(getResult(req)).then(result=>{
-        res.end(JSON.stringify(result))
-    })
-
-})
-
-router.post('/config/exitsend', function (req, res) {
-
-    //console.log( '[request]:\n' + ' - path: /config/load\n - receive: ' + JSON.stringify(req.body) + '\n' )
-    main.SetExitSend(getResult(req)).then(result=>{
-        res.end(JSON.stringify(result))
-    })
-})
-router.post('/config/closesend', function (req, res) {
-
-    //console.log( '[request]:\n' + ' - path: /config/load\n - receive: ' + JSON.stringify(req.body) + '\n' )
-    main.SetCloseSend(getResult(req)).then(result=>{
-        res.end(JSON.stringify(result))
-    })
-})
-router.post('/config/getsettings', function (req, res) {
-
-    //console.log( '[request]:\n' + ' - path: /config/load\n - receive: ' + JSON.stringify(req.body) + '\n' )
-    main.GetSettings(getResult(req)).then(result=>{
-        res.end(JSON.stringify(result))
-    })
-
-})
+// router.post('/config/crashsend', function (req, res) {
+//
+//     //console.log( '[request]:\n' + ' - path: /config/load\n - receive: ' + JSON.stringify(req.body) + '\n' )
+//     main.SetCrashSend(getResult(req)).then(result=>{
+//         res.end(JSON.stringify(result))
+//     })
+//
+// })
+//
+// router.post('/config/exitsend', function (req, res) {
+//
+//     //console.log( '[request]:\n' + ' - path: /config/load\n - receive: ' + JSON.stringify(req.body) + '\n' )
+//     main.SetExitSend(getResult(req)).then(result=>{
+//         res.end(JSON.stringify(result))
+//     })
+// })
+// router.post('/config/closesend', function (req, res) {
+//
+//     //console.log( '[request]:\n' + ' - path: /config/load\n - receive: ' + JSON.stringify(req.body) + '\n' )
+//     main.SetCloseSend(getResult(req)).then(result=>{
+//         res.end(JSON.stringify(result))
+//     })
+// })
+// router.post('/config/getsettings', function (req, res) {
+//
+//     //console.log( '[request]:\n' + ' - path: /config/load\n - receive: ' + JSON.stringify(req.body) + '\n' )
+//     main.GetSettings(getResult(req)).then(result=>{
+//         res.end(JSON.stringify(result))
+//     })
+//
+// })
 
 router.post('/apps/groups', function (req, res) {
 

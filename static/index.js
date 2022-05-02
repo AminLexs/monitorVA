@@ -1,5 +1,6 @@
 var path = require('path')
 let utils = require('./Utils')
+const {colors} = require("./Utils");
 var isMonit=false
 var lineChartCPU;
 var lineChartMemory;
@@ -161,8 +162,8 @@ function startStop(){
                 var buttonElement = document.createElement('button');
                 buttonElement.type = "submit"
                 buttonElement.className="btn"
-                buttonElement.innerHTML=(element.status == 'up')?'Остановить':'Запустить';
-                (element.status == 'up')?
+                buttonElement.innerHTML=(element.status == 'running')?'Остановить':'Запустить';
+                (element.status == 'running')?
                     buttonElement.addEventListener('click', function(){
                         StopApp(element.name);
                 })
@@ -198,9 +199,10 @@ function StartApp( name ){
             method: 'POST',
             data: {app:{name: name}},
             json: true,
-
+            success: function (response) {
+                startStop()
+            }
         })
-    startStop()
       //  console.log(this.value)
    // })
 
@@ -214,11 +216,12 @@ function StopApp( name ){
         method: 'POST',
         data: {app:{name: name}},
         json: true,
-
+        success: function (response) {
+            startStop()
+        }
     })
     //  console.log(this.value)
     // })
-    startStop()
 }
 
 var jsonfiledata = ""
@@ -730,26 +733,4 @@ global.getMonit = getMonit
 global.startStop = startStop
 global.StartApp = StartApp
 global.StopApp = StopApp
-/*
- barChart.data.datasets.push({
-                        label: '{{name}}(PID:{{pid}})',
-                        data: [{{mem}}],
-                        fill: false,
-                        backgroundColor: colors[i],
-                        borderColor: colors[i]
-                    })
-                    barChart2.data.datasets.push({
-                        label: '{{name}}(PID:{{pid}})',
-                        data: [{{cpu}}],
-                        fill: false,
-                        backgroundColor: colors[i],
-                        borderColor: colors[i]
-                    })
-                    i > colors.length - 1 ? i = 0 : i++
-                })
-                barChart.update()
-                barChart2.update()
 
-                fetchData( barChart, barChart2 )
-
-*/
