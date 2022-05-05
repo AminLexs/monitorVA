@@ -1,13 +1,10 @@
 const { getSuccess } = require('./responseService');
 const { getDocument } = require('./dbService');
 
-async function isAdmin(uid, option) {
-  var doc = await getDocument(uid);
+async function checkIsAdmin(uid) {
+  const doc = await getDocument(uid);
   if (doc.exists) {
-    if (doc.data()['role'] === 'admin') {
-      return true;
-    } else if (option === undefined) return false;
-    else return doc.data()[option];
+    return doc.data()['role'] === 'admin'
   } else {
     return 'Error getting documents';
   }
@@ -33,5 +30,5 @@ async function getRole(params) {
 	})
 }*/
 
-module.exports.isAdmin = isAdmin;
+module.exports.checkIsAdmin = checkIsAdmin;
 module.exports.getRole = getRole;

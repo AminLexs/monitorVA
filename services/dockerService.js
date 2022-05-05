@@ -13,6 +13,10 @@ function listContainers(options, callback) {
   return docker.listContainers(options, callback);
 }
 
+function createContainer(options, callback) {
+  return docker.createContainer(options, callback)
+}
+
 function buildImage(file, options) {
   docker.buildImage(file, options);
 }
@@ -20,3 +24,5 @@ function buildImage(file, options) {
 module.exports.getContainer = getContainer;
 module.exports.listImages = listImages;
 module.exports.listContainers = listContainers;
+module.exports.buildImage = buildImage;
+module.exports.createContainer = createContainer;

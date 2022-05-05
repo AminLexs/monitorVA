@@ -8,6 +8,9 @@ const bodyParser = require('body-parser')
 const exphbs = require('express-handlebars')
 const {listFormat, getHumanPeriod} = require("./utils/dataFormattingUtils");
 const {showInfo, showError} = require("./utils/logUtils")
+const cors = require('cors')
+const multer = require("multer");
+
 const server = express()
 
 
@@ -31,9 +34,11 @@ server.engine('hbs',hbs.engine)
 server.set('view engine', 'hbs')
 server.set('views','./views')
 
+server.use(cors())
 server.use(bodyParser.json())
 server.use(bodyParser.urlencoded({extended: true}))
 server.use(express.static(path.join((__dirname,'./public'))))
+//server.use(multer({dest:"uploads"}).single("image"));
 server.use("/static", express.static('./static/'));
 server.use(monitorRoute)
 

@@ -2,10 +2,12 @@ const { Router } = require('express');
 const router = Router();
 const containersManager = require('../services/containersManager');
 const containersMonitor = require('../services/containersMonitor');
+const imagesService = require('../services/imagesService')
+const multer = require("multer");
 
 function getResult(req) {
   req.body.ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  return req.body;
+  return {...req.body,...req.params,...req.query};
 }
 
 /**
@@ -17,133 +19,69 @@ router.get('/', function (req, res) {
   //res.end('Supervizer server v' + common.pkg.version)
 });
 
-router.post('/auth', function (req, res) {
-  //console.log( '[request]:\n' + ' - path: /apps/monit\n - receive: ' + JSON.stringify(req.body) + '\n' )
-  //  let monitApps = JSON.parse(JSON.stringify(main.monit(getResult(req))['data']))
-  res.end(JSON.stringify(main.Authenticate(getResult(req))));
-  // console.log(JSON.stringify(main.monit(getResult(req)))[0])
-
-  //res.end(JSON.stringify(main.monit(getResult(req))))
-  //res.end(JSON.stringify(main.monit(getResult(req))))
-});
-
 /**
- * POST /app/start
+ * GET /containers
  */
-router.post('/app/start', function (req, res) {
-  //console.log( '[request]:\n' + ' - path: /app/start\n - receive: ' + JSON.stringify(req.body) + '\n' )
-  containersManager.startContainer(getResult(req)).then((result) => {
-    res.end(JSON.stringify(result));
-  });
-  // const result =main.start(getResult(req))
-  // res.end(JSON.stringify(result))
-});
-
-/**
- * POST /app/stop
- */
-router.post('/app/stop', function (req, res) {
-  //console.log( '[request]:\n' + ' - path: /app/stop\n - receive: ' + JSON.stringify(req.body) + '\n' )
-  containersManager.stopContainer(getResult(req)).then((result) => {
-    res.end(JSON.stringify(result));
-  });
-  // res.end(JSON.stringify(main.stop(getResult(req))))
-});
-
-/**
- * POST /apps/list
- */
-router.post('/apps/list', function (req, res) {
-  //	console.log( '[request]:\n' + ' - path: /apps/list\n - receive: ' + JSON.stringify(req.body) + '\n' )
-  /* let apps= main.list(getResult(req)).data
-    res.render('index', {
-        title: 'Monitor',
-        isIndex: true,
-        isList:true,
-        apps: apps
-    })*/
-  containersMonitor.list(getResult(req)).then((result) => {
+router.get('/containers', function (req, res) {
+  containersMonitor.list(req).then((result) => {
     res.end(JSON.stringify(result));
   });
 });
 
-router.post('/apps/monit', function (req, res) {
-  //console.log( '[request]:\n' + ' - path: /apps/monit\n - receive: ' + JSON.stringify(req.body) + '\n' )
-  //  let monitApps = JSON.parse(JSON.stringify(main.monit(getResult(req))['data']))
-  /*res.render('index', {
-        title: 'Monitor',
-        isIndex: true,
-        isMonit: true,
-        monitApps: monitApps
-    })*/
-  // console.log(JSON.stringify(main.monit(getResult(req)))[0])
+// /**
+//  * PUT /containers
+//  */
+// router.put('/containers', function (req, res) {
+//   //console.log( '[request]:\n' + ' - path: /config/save\n - receive: ' + JSON.stringify(req.body) + '\n' )
+//   imagesService.addImage(req).then((result) => {
+//     res.end(JSON.stringify(result));
+//   });
+// });
+
+/**
+ * POST /containers/start
+ */
+router.post('/containers/start', function (req, res) {
+  containersManager.startContainers(getResult(req)).then((result) => {
+    res.end(JSON.stringify(result));
+  });
+});
+
+/**
+ * POST /containers/stop
+ */
+router.post('/containers/stop', function (req, res) {
+  containersManager.stopContainers(getResult(req)).then((result) => {
+    res.end(JSON.stringify(result));
+  });
+});
+
+/**
+ * POST /containers/monit
+ */
+router.post('/containers/monit', function (req, res) {
   containersMonitor.monit(getResult(req)).then((result) => {
     res.end(JSON.stringify(result));
   });
 });
 
 /**
- * GET /config/load
+ * GET /images
  */
-router.post('/config/load', function (req, res) {
-  //console.log( '[request]:\n' + ' - path: /config/load\n - receive: ' + JSON.stringify(req.body) + '\n' )
-
-  res.end(JSON.stringify(main.load(getResult(req))));
-});
-
-// router.post('/config/crashsend', function (req, res) {
-//
-//     //console.log( '[request]:\n' + ' - path: /config/load\n - receive: ' + JSON.stringify(req.body) + '\n' )
-//     main.SetCrashSend(getResult(req)).then(result=>{
-//         res.end(JSON.stringify(result))
-//     })
-//
-// })
-//
-// router.post('/config/exitsend', function (req, res) {
-//
-//     //console.log( '[request]:\n' + ' - path: /config/load\n - receive: ' + JSON.stringify(req.body) + '\n' )
-//     main.SetExitSend(getResult(req)).then(result=>{
-//         res.end(JSON.stringify(result))
-//     })
-// })
-// router.post('/config/closesend', function (req, res) {
-//
-//     //console.log( '[request]:\n' + ' - path: /config/load\n - receive: ' + JSON.stringify(req.body) + '\n' )
-//     main.SetCloseSend(getResult(req)).then(result=>{
-//         res.end(JSON.stringify(result))
-//     })
-// })
-// router.post('/config/getsettings', function (req, res) {
-//
-//     //console.log( '[request]:\n' + ' - path: /config/load\n - receive: ' + JSON.stringify(req.body) + '\n' )
-//     main.GetSettings(getResult(req)).then(result=>{
-//         res.end(JSON.stringify(result))
-//     })
-//
-// })
-
-router.post('/apps/groups', function (req, res) {
-  //console.log( '[request]:\n' + ' - path: /config/load\n - receive: ' + JSON.stringify(req.body) + '\n' )
-  main.getListGroup(getResult(req)).then((result) => {
+router.get('/images', function (req, res) {
+  imagesService.list(req).then((result) => {
     res.end(JSON.stringify(result));
   });
-  //res.end(JSON.stringify(main.getListGroup(getResult(req))))
 });
+
 /**
- * PUT /apps
+ * POST /images
  */
-router.put('/apps', function (req, res) {
-  //console.log( '[request]:\n' + ' - path: /apps\n - receive: ' + JSON.stringify(req.body) + '\n' )
-  req.body.app.enabled = JSON.parse(req.body.app.enabled);
-  req.body.app.stopped = JSON.parse(req.body.app.stopped);
-  req.body.app.attempted = JSON.parse(req.body.app.attempted);
-  req.body.app.enabled = JSON.parse(req.body.app.enabled);
-  req.body.app.created = JSON.parse(req.body.app.created);
-  req.body.app.keep = JSON.parse(req.body.app.keep);
-  req.body.app.watch.enabled = JSON.parse(req.body.app.watch.enabled);
-  req.body.app.watch.excludes = [];
-  res.end(JSON.stringify(main.add(getResult(req))));
+router.post('/images', multer({dest:"uploads"}).single("image"), function (req, res) {
+  //console.log( '[request]:\n' + ' - path: /config/save\n - receive: ' + JSON.stringify(req.body) + '\n' )
+  imagesService.addImage(req).then((result) => {
+    res.end(JSON.stringify(result));
+  });
 });
 
 /**
@@ -155,25 +93,6 @@ router.post('/app', function (req, res) {
 });
 
 /**
- * POST /apps/start
- */
-router.post('/apps/start', function (req, res) {
-  //console.log( '[request]:\n' + ' - path: /apps/start\n - receive: ' + JSON.stringify(req.body) + '\n' )
-  main.startAll(getResult(req)).then((result) => {
-    res.end(JSON.stringify(result));
-  });
-});
-
-/**
- * POST /apps/stop
- */
-router.post('/apps/stop', function (req, res) {
-  //console.log( '[request]:\n' + ' - path: /apps/stop\n - receive: ' + JSON.stringify(req.body) + '\n' )
-  main.stopAll(getResult(req)).then((result) => {
-    res.end(JSON.stringify(result));
-  });
-});
-/**
  * POST /role
  */
 router.post('/role', function (req, res) {
@@ -181,25 +100,16 @@ router.post('/role', function (req, res) {
   main.getRole(getResult(req)).then((result) => {
     res.end(JSON.stringify(result));
   });
-  // var response = main.getRole(getResult(req))
+
 });
+
 /**
  * POST /role
  */
 router.post('/config/setemail', function (req, res) {
-  //console.log( '[request]:\n' + ' - path: /apps/stop\n - receive: ' + JSON.stringify(req.body) + '\n' )
   main.SetEmail(getResult(req)).then((result) => {
     res.end(JSON.stringify(result));
   });
-  // var response = main.getRole(getResult(req))
-});
-
-/**
- * POST /config/save
- */
-router.post('/config/save', function (req, res) {
-  //console.log( '[request]:\n' + ' - path: /config/save\n - receive: ' + JSON.stringify(req.body) + '\n' )
-  res.end(JSON.stringify(main.save(getResult(req))));
 });
 
 module.exports = router;

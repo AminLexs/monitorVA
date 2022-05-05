@@ -1,65 +1,46 @@
+const {getUidFromToken} = require("./dbService");
+const {getContainersFromUid} = require("./dbService");
 const { calcCPUPercent } = require('../utils/calculationUtils');
-const { getContainer } = require('./dockerService');
+const { getContainer, createContainer } = require('./dockerService');
 const { getSuccess } = require('./responseService');
 const { getError } = require('./responseService');
 const { listContainers } = require('./dockerService');
 const { listImages } = require('./dockerService');
-const { isAdmin } = require('./authService');
+const { checkIsAdmin } = require('./authService');
 
-async function list(params) {
-  let dataFromDB = await isAdmin(params.uid, JSON.parse(params.imagelist) ? 'images' : 'containers');
+const getContainerFromResponse = (containerInfo)=>{
+  const container = {
+    name: containerInfo.Names[0],
+    image: containerInfo.Image,
+    status: containerInfo.State,
+    publicPort: containerInfo.Ports[0] !== undefined ? containerInfo.Ports[0].PublicPort : undefined,
+    privatePort: containerInfo.Ports[0] !== undefined ? containerInfo.Ports[0].PrivatePort : undefined,
+    created: containerInfo.Created,
+    Id: containerInfo.Id,
+  };
+  return container;
+}
 
-  if (JSON.parse(params.imagelist)) {
-    return new Promise((resolve, reject) => {
-      listImages(function (err, images) {
-        if (err) {
-          reject(getError('Error getting images. Check docker server.'));
-        } else {
-          let imagesResponse = [];
-          images.forEach(function (imageInfo) {
-            if (dataFromDB === true || dataFromDB.includes(imageInfo.Id)) {
-              let nameAndVersion = imageInfo.RepoTags[0].split(':');
-              let image = {
-                name: nameAndVersion[0],
-                version: nameAndVersion[1],
-                size: imageInfo.Size,
-                created: imageInfo.Created,
-                Id: imageInfo.Id,
-              };
-              imagesResponse.push(image);
-            }
-          });
-          resolve(getSuccess(imagesResponse));
-        }
-      });
-    });
-  } else {
-    return new Promise((resolve, reject) => {
-      listContainers({ all: true }, function (err, containers) {
+async function list(req) {
+  return new Promise((resolve, reject) => {
+      listContainers({ all: true }, async function (err, containers) {
         if (err) {
           reject(getError('Error getting containers. Check docker server.'));
         } else {
-          let containersResponse = [];
-
-          containers.forEach(function (containerInfo) {
-            if (dataFromDB === true || dataFromDB.includes(containerInfo.Id)) {
-              let container = {
-                name: containerInfo.Names[0],
-                image: containerInfo.Image,
-                status: containerInfo.State,
-                publicPort: containerInfo.Ports[0] !== undefined ? containerInfo.Ports[0].PublicPort : undefined,
-                privatePort: containerInfo.Ports[0] !== undefined ? containerInfo.Ports[0].PrivatePort : undefined,
-                created: containerInfo.Created,
-                Id: containerInfo.Id,
-              };
-              containersResponse.push(container);
-            }
-          });
-          resolve(getSuccess(containersResponse));
+          const token = req.get('token')
+          const uid = await getUidFromToken(token);
+          const isAdmin = await checkIsAdmin(uid);
+          if (isAdmin) {
+            return resolve(getSuccess(containers.map((container)=>(getContainerFromResponse(container)))));
+          }
+          const allowedContainers = await getContainersFromUid(uid)
+          const containersResponse = containers.filter((container)=>(
+            allowedContainers.includes(container.id)
+          )).map((container)=>(getContainerFromResponse(container)));
+          return resolve(getSuccess(containersResponse));
         }
       });
     });
-  }
 }
 
 async function getStatsContainers(arrayID) {
@@ -71,7 +52,7 @@ async function getStatsContainers(arrayID) {
         resolve({
           name: data.name.slice(1),
           //pid: app.pid,
-          cpu: cpuUsage,
+          cpu: cpuUsage>100?100:cpuUsage,
           mem: data.memory_stats.usage, //process.memoryUsage.rss//
         });
       });
@@ -104,5 +85,10 @@ async function monit(params) {
   return getSuccess(await getStatsContainers(necessaryContainers));
 }
 
+async function createContainer(parems) {
+  return createContainer(parems.options,)
+}
+
 module.exports.list = list;
 module.exports.monit = monit;
+module.exports.createContainer = createContainer;
