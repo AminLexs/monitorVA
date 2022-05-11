@@ -64,6 +64,12 @@ async function unPauseContainer(id) {
     });
   });
 }
+async function getContainerInfoDocker(id) {
+  return (await getContainer(id)).inspect()
+}
+async function getContainerLogsDocker(id) {
+  return (await getContainer(id)).logs({follow:false, stdout: 1, stderr: 1,})
+}
 
 module.exports.docker = docker;
 module.exports.getContainer = getContainer;
@@ -77,3 +83,5 @@ module.exports.restartContainer = restartContainer;
 module.exports.pauseContainer = pauseContainer;
 module.exports.unPauseContainer =unPauseContainer;
 module.exports.observeEvents = observeEvents;
+module.exports.getContainerInfoDocker = getContainerInfoDocker;
+module.exports.getContainerLogsDocker = getContainerLogsDocker;

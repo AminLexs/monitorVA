@@ -102,6 +102,24 @@ router.post('/containers/monit', function (req, res) {
 });
 
 /**
+ * GET /container/:containerID
+ */
+router.get('/container/', function (req, res) {
+  containersMonitor.getContainerInfo(req).then((result) => {
+    res.end(JSON.stringify(result));
+  });
+});
+
+/**
+ * GET /container/logs
+ */
+router.get('/container/logs', function (req, res) {
+  containersMonitor.getContainerLogs(req).then((result) => {
+    res.end(JSON.stringify(result));
+  });
+});
+
+/**
  * GET /images
  */
 router.get('/images', function (req, res) {
