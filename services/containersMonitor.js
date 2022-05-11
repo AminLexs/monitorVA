@@ -4,8 +4,7 @@ const { calcCPUPercent } = require('../utils/calculationUtils');
 const { getContainer, createContainer } = require('./dockerService');
 const { getSuccess } = require('./responseService');
 const { getError } = require('./responseService');
-const { listContainers } = require('./dockerService');
-const { listImages } = require('./dockerService');
+const { listContainers, getEvents } = require('./dockerService');
 const { checkIsAdmin } = require('./authService');
 
 const getContainerFromResponse = (containerInfo)=>{
@@ -82,13 +81,12 @@ async function monit(params) {
   let necessaryContainers = containersId.filter(function (id) {
     if (activeContainers.includes(id)) return id;
   });
+
   return getSuccess(await getStatsContainers(necessaryContainers));
 }
+function addGetEvents() {
 
-async function createContainer(parems) {
-  return createContainer(parems.options,)
 }
-
 module.exports.list = list;
 module.exports.monit = monit;
 module.exports.createContainer = createContainer;

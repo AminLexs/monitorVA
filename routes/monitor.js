@@ -10,13 +10,11 @@ function getResult(req) {
   return {...req.body,...req.params,...req.query};
 }
 
-/**
+/** deprecated
  * GET /
  */
 router.get('/', function (req, res) {
-  //res.send('<input type="submit" value="Добавить новую задачу" formaction="server.js" formmethod="post">')
   res.render('index', { title: 'Monitor' });
-  //res.end('Supervizer server v' + common.pkg.version)
 });
 
 /**
@@ -28,15 +26,25 @@ router.get('/containers', function (req, res) {
   });
 });
 
-// /**
-//  * PUT /containers
-//  */
-// router.put('/containers', function (req, res) {
-//   //console.log( '[request]:\n' + ' - path: /config/save\n - receive: ' + JSON.stringify(req.body) + '\n' )
-//   imagesService.addImage(req).then((result) => {
-//     res.end(JSON.stringify(result));
-//   });
-// });
+/**
+ * PUT /containers
+ */
+router.put('/containers', function (req, res) {
+  //console.log( '[request]:\n' + ' - path: /config/save\n - receive: ' + JSON.stringify(req.body) + '\n' )
+  containersManager.createContainerFromReq(getResult(req)).then((result) => {
+    res.end(JSON.stringify(result));
+  });
+});
+
+/**
+ * DELETE /containers
+ */
+router.delete('/containers', function (req, res) {
+  //console.log( '[request]:\n' + ' - path: /config/save\n - receive: ' + JSON.stringify(req.body) + '\n' )
+  containersManager.deleteContainers(getResult(req)).then((result) => {
+    res.end(JSON.stringify(result));
+  });
+});
 
 /**
  * POST /containers/start
@@ -52,6 +60,34 @@ router.post('/containers/start', function (req, res) {
  */
 router.post('/containers/stop', function (req, res) {
   containersManager.stopContainers(getResult(req)).then((result) => {
+    res.end(JSON.stringify(result));
+  });
+});
+
+/**
+ * POST /containers/restart
+ */
+router.post('/containers/restart', function (req, res) {
+  containersManager.restartContainers(getResult(req)).then((result) => {
+    res.end(JSON.stringify(result));
+  });
+});
+
+/**
+ * POST /containers/pause
+ */
+router.post('/containers/pause', function (req, res) {
+  containersManager.pauseContainers(getResult(req)).then((result) => {
+    res.end(JSON.stringify(result));
+  });
+});
+
+
+/**
+ * POST /containers/unpause
+ */
+router.post('/containers/unpause', function (req, res) {
+  containersManager.unPauseContainers(getResult(req)).then((result) => {
     res.end(JSON.stringify(result));
   });
 });
@@ -85,22 +121,21 @@ router.post('/images', multer({dest:"uploads"}).single("image"), function (req, 
 });
 
 /**
+ * DELETE /images
+ */
+router.delete('/images', function (req, res) {
+  //console.log( '[request]:\n' + ' - path: /config/save\n - receive: ' + JSON.stringify(req.body) + '\n' )
+  imagesService.deleteImages(getResult(req)).then((result) => {
+    res.end(JSON.stringify(result));
+  });
+});
+
+/**
  * POST /app
  */
 router.post('/app', function (req, res) {
   //console.log( '[request]:\n' + ' - path: /app\n - receive: ' + JSON.stringify(req.body) + '\n' )
   res.end(JSON.stringify(main.set(getResult(req))));
-});
-
-/**
- * POST /role
- */
-router.post('/role', function (req, res) {
-  //console.log( '[request]:\n' + ' - path: /apps/stop\n - receive: ' + JSON.stringify(req.body) + '\n' )
-  main.getRole(getResult(req)).then((result) => {
-    res.end(JSON.stringify(result));
-  });
-
 });
 
 /**

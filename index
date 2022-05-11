@@ -10,6 +10,7 @@ const {listFormat, getHumanPeriod} = require("./utils/dataFormattingUtils");
 const {showInfo, showError} = require("./utils/logUtils")
 const cors = require('cors')
 const multer = require("multer");
+const dockerService = require('./services/dockerService')
 
 const server = express()
 
@@ -127,3 +128,4 @@ process.on('close', function (code) {
 
 server.listen(process.env.port,process.env.host)
 showInfo('Monitor server started at (' + process.env.host + ':' + process.env.port + ')')
+dockerService.observeEvents()

@@ -21,6 +21,14 @@ firebase.initializeApp({
 const firestore = firebase.firestore();
 const FieldValue = firebase.firestore.FieldValue;
 
+const containerDBTemplate = {
+  startTimes: 0,
+  stopTimes: 0,
+  pauseTimes: 0,
+  unpauseTimes: 0,
+  restartTimes: 0,
+}
+
 async function getUidFromToken(token) {
   const decodedToken = await adminAuth.verifyIdToken(token)
   if (!decodedToken.uid) {
@@ -63,6 +71,32 @@ async function getImagesFromUid(uid) {
   }
 }
 
+const Statuses = {
+  start: 'startTimes',
+  stop:'stopTimes',
+  pause:'pauseTimes',
+  unpause:'unpauseTimes',
+  restart:'restartTimes',
+}
+
+async function saveContainer(id){
+  return firestore.collection("containers").doc(id).set(
+      containerDBTemplate
+  )
+}
+
+async function deleteContainerFromDB(id) {
+  return firestore.collection("containers").doc(id).delete()
+}
+
+async function incrementContainerStatusTime(id,status) {
+  const washingtonRef = firestore.collection('containers').doc(id);
+
+  const res = await washingtonRef.update({
+    [Statuses[status]]: FieldValue.increment(1)
+  });
+}
+
 module.exports.FieldValue = FieldValue;
 module.exports.firestore = firestore;
 module.exports.firebase = firebase;
@@ -70,3 +104,6 @@ module.exports.getDocument = getDocument;
 module.exports.getContainersFromUid = getContainersFromUid;
 module.exports.getImagesFromUid = getImagesFromUid;
 module.exports.getUidFromToken = getUidFromToken;
+module.exports.incrementContainerStatusTime = incrementContainerStatusTime;
+module.exports.saveContainer = saveContainer;
+module.exports.deleteContainerFromDB = deleteContainerFromDB;

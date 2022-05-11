@@ -1,14 +1,23 @@
-const { getContainer } = require('../services/dockerService');
+const { getContainer, createContainer,
+  removeContainer, restartContainer,
+  pauseContainer, unPauseContainer } = require('./dockerService');
 
-async function createContainer() {
-  return new Promise((resolve, reject) => {
-    createContainer({ all: true }, async function (err, containers) {
-      if (err) {
-        reject(getError('Error getting containers. Check docker server.'));
-      } else {
+async function createContainerFromReq(params) {
+  const dockerResult = await createContainer({Image: params.imageName,
+    HostConfig: {
+      PortBindings: {
+        [`${params.privatePort}/tcp`]: [{ HostPort: `${params.publicPort}` }]
+      },
+      Binds: [
+        "/root/dir:/tmp"
+      ],
+    },
+    ExposedPorts: {
+      [`${params.privatePort}/tcp`]: {} // ?????????????????????
+    },
+    name: params.containerName})
 
-      }
-    })})
+  return dockerResult
 }
 
 async function startContainer(id) {
@@ -47,7 +56,60 @@ async function stopContainers(params) {
   });
 }
 
+async function deleteContainer(id) {
+  const dockerResult =  await removeContainer(id)
+
+  return dockerResult;
+}
+
+async function deleteContainers(params) {
+  const containersID = params.containersId;
+  const promises = []
+  containersID.forEach((containerID)=>{
+    promises.push(deleteContainer(containerID))
+  })
+  return Promise.all(promises).then((result) => {
+    return result;
+  });
+}
+
+async function restartContainers(params) {
+  const containersID = params.containersId;
+  const promises = []
+  containersID.forEach((containerID)=>{
+    promises.push(restartContainer(containerID))
+  })
+  return Promise.all(promises).then((result) => {
+    return result;
+  });
+}
+
+async function pauseContainers(params) {
+  const containersID = params.containersId;
+  const promises = []
+  containersID.forEach((containerID)=>{
+    promises.push(pauseContainer(containerID))
+  })
+  return Promise.all(promises).then((result) => {
+    return result;
+  });
+}
+
+async function unPauseContainers(params) {
+  const containersID = params.containersId;
+  const promises = []
+  containersID.forEach((containerID)=>{
+    promises.push(unPauseContainer(containerID))
+  })
+  return Promise.all(promises).then((result) => {
+    return result;
+  });
+}
+
+module.exports.createContainerFromReq = createContainerFromReq;
 module.exports.startContainers = startContainers
-//module.exports.startContainer = startContainer;
-//module.exports.stopContainer = stopContainer;
+module.exports.restartContainers = restartContainers;
 module.exports.stopContainers = stopContainers
+module.exports.deleteContainers = deleteContainers
+module.exports.pauseContainers = pauseContainers;
+module.exports.unPauseContainers = unPauseContainers;

@@ -1,21 +1,21 @@
-const dockerode = require('dockerode');
 const {listImages} = require("./dockerService");
 const {getImagesFromUid, getUidFromToken} = require("./dbService");
 const {checkIsAdmin} = require("./authService");
 const {getError, getSuccess} = require("./responseService");
-const { buildImage } = require('../services/dockerService');
+const {docker, buildImage, removeImage } = require('../services/dockerService');
 
-async function addImage(params) {
-  let filedata = params.file;
-  console.log(filedata);
-  const stream = buildImage(filedata.path, { t: 'lab1ewqew2serrvlags' }, function (err, response) {
+async function addImage(req) {
+  const filedata = req.file;
+  const imageName = req.get('imageName');
+
+  const stream = await buildImage(filedata.path, { t: imageName }, function (err, response) {
     if (err) {
       console.log(err)
     }
   });
-  // await new Promise((resolve, reject) => {
-  //   dockerode.modem.followProgress(stream, (err, res) => (err ? reject(err) : resolve(res)));
-  // });
+  await new Promise((resolve, reject) => {
+    docker.modem.followProgress(stream, (err, res) => (err ? reject(err) : resolve(res)));
+  });
   // await firestore
   //   .collection('users')
   //   .doc(params.uid)
@@ -30,6 +30,21 @@ async function addImage(params) {
   //   });
   //
   return getSuccess({}, 'Image succesfully added');
+}
+
+async function deleteImage(id) {
+  return removeImage(id)
+}
+
+async function deleteImages(params) {
+  const imagesID = params.imagesId;
+  const promises = []
+  imagesID.forEach((imageID)=>{
+    promises.push(deleteImage(imageID))
+  })
+  return Promise.all(promises).then((result) => {
+    return result;
+  });
 }
 
 const getImageFromResponse = (imageInfo)=>{
@@ -92,4 +107,5 @@ async function list(req) {
 //   });
 // } else {
 module.exports.addImage = addImage;
+module.exports.deleteImages = deleteImages;
 module.exports.list = list;
