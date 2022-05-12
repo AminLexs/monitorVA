@@ -1,23 +1,30 @@
-const { getContainer, createContainer,
-  removeContainer, restartContainer,
-  pauseContainer, unPauseContainer } = require('./dockerService');
+const {
+  getContainer,
+  createContainer,
+  removeContainer,
+  restartContainer,
+  pauseContainer,
+  unPauseContainer,
+  runExecDocker,
+} = require('./dockerService');
+const { getSuccess } = require('./responseService');
 
 async function createContainerFromReq(params) {
-  const dockerResult = await createContainer({Image: params.imageName,
+  const dockerResult = await createContainer({
+    Image: params.imageName,
     HostConfig: {
       PortBindings: {
-        [`${params.privatePort}/tcp`]: [{ HostPort: `${params.publicPort}` }]
+        [`${params.privatePort}/tcp`]: [{ HostPort: `${params.publicPort}` }],
       },
-      Binds: [
-        "/root/dir:/tmp"
-      ],
+      Binds: ['/root/dir:/tmp'],
     },
     ExposedPorts: {
-      [`${params.privatePort}/tcp`]: {} // ?????????????????????
+      [`${params.privatePort}/tcp`]: {}, // ?????????????????????
     },
-    name: params.containerName})
+    name: params.containerName,
+  });
 
-  return dockerResult
+  return dockerResult;
 }
 
 async function startContainer(id) {
@@ -29,10 +36,10 @@ async function startContainer(id) {
 
 async function startContainers(params) {
   const containersID = params.containersId;
-  const promises = []
-  containersID.forEach((containerID)=>{
-    promises.push(startContainer(containerID))
-  })
+  const promises = [];
+  containersID.forEach((containerID) => {
+    promises.push(startContainer(containerID));
+  });
   return Promise.all(promises).then((result) => {
     return result;
   });
@@ -47,27 +54,27 @@ async function stopContainer(id) {
 
 async function stopContainers(params) {
   const containersID = params.containersId;
-  const promises = []
-  containersID.forEach((containerID)=>{
-    promises.push(stopContainer(containerID))
-  })
+  const promises = [];
+  containersID.forEach((containerID) => {
+    promises.push(stopContainer(containerID));
+  });
   return Promise.all(promises).then((result) => {
     return result;
   });
 }
 
 async function deleteContainer(id) {
-  const dockerResult =  await removeContainer(id)
+  const dockerResult = await removeContainer(id);
 
   return dockerResult;
 }
 
 async function deleteContainers(params) {
   const containersID = params.containersId;
-  const promises = []
-  containersID.forEach((containerID)=>{
-    promises.push(deleteContainer(containerID))
-  })
+  const promises = [];
+  containersID.forEach((containerID) => {
+    promises.push(deleteContainer(containerID));
+  });
   return Promise.all(promises).then((result) => {
     return result;
   });
@@ -75,10 +82,10 @@ async function deleteContainers(params) {
 
 async function restartContainers(params) {
   const containersID = params.containersId;
-  const promises = []
-  containersID.forEach((containerID)=>{
-    promises.push(restartContainer(containerID))
-  })
+  const promises = [];
+  containersID.forEach((containerID) => {
+    promises.push(restartContainer(containerID));
+  });
   return Promise.all(promises).then((result) => {
     return result;
   });
@@ -86,10 +93,10 @@ async function restartContainers(params) {
 
 async function pauseContainers(params) {
   const containersID = params.containersId;
-  const promises = []
-  containersID.forEach((containerID)=>{
-    promises.push(pauseContainer(containerID))
-  })
+  const promises = [];
+  containersID.forEach((containerID) => {
+    promises.push(pauseContainer(containerID));
+  });
   return Promise.all(promises).then((result) => {
     return result;
   });
@@ -97,19 +104,24 @@ async function pauseContainers(params) {
 
 async function unPauseContainers(params) {
   const containersID = params.containersId;
-  const promises = []
-  containersID.forEach((containerID)=>{
-    promises.push(unPauseContainer(containerID))
-  })
+  const promises = [];
+  containersID.forEach((containerID) => {
+    promises.push(unPauseContainer(containerID));
+  });
   return Promise.all(promises).then((result) => {
     return result;
   });
 }
 
+async function runExec(params) {
+  return getSuccess(await runExecDocker(params.containerId, params.cmd));
+}
+
 module.exports.createContainerFromReq = createContainerFromReq;
-module.exports.startContainers = startContainers
+module.exports.startContainers = startContainers;
 module.exports.restartContainers = restartContainers;
-module.exports.stopContainers = stopContainers
-module.exports.deleteContainers = deleteContainers
+module.exports.stopContainers = stopContainers;
+module.exports.deleteContainers = deleteContainers;
 module.exports.pauseContainers = pauseContainers;
 module.exports.unPauseContainers = unPauseContainers;
+module.exports.runExec = runExec;

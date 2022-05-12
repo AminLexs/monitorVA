@@ -4,7 +4,7 @@ const { getDocument } = require('./dbService');
 async function checkIsAdmin(uid) {
   const doc = await getDocument(uid);
   if (doc.exists) {
-    return doc.data()['role'] === 'admin'
+    return doc.data()['role'] === 'admin';
   } else {
     return 'Error getting documents';
   }

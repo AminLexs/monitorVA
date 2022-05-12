@@ -1,8 +1,8 @@
-const {listImages} = require("./dockerService");
-const {getImagesFromUid, getUidFromToken} = require("./dbService");
-const {checkIsAdmin} = require("./authService");
-const {getError, getSuccess} = require("./responseService");
-const {docker, buildImage, removeImage } = require('../services/dockerService');
+const { listImages } = require('./dockerService');
+const { getImagesFromUid, getUidFromToken } = require('./dbService');
+const { checkIsAdmin } = require('./authService');
+const { getError, getSuccess } = require('./responseService');
+const { docker, buildImage, removeImage } = require('../services/dockerService');
 
 async function addImage(req) {
   const filedata = req.file;
@@ -10,7 +10,7 @@ async function addImage(req) {
 
   const stream = await buildImage(filedata.path, { t: imageName }, function (err, response) {
     if (err) {
-      console.log(err)
+      console.log(err);
     }
   });
   await new Promise((resolve, reject) => {
@@ -33,48 +33,48 @@ async function addImage(req) {
 }
 
 async function deleteImage(id) {
-  return removeImage(id)
+  return removeImage(id);
 }
 
 async function deleteImages(params) {
   const imagesID = params.imagesId;
-  const promises = []
-  imagesID.forEach((imageID)=>{
-    promises.push(deleteImage(imageID))
-  })
+  const promises = [];
+  imagesID.forEach((imageID) => {
+    promises.push(deleteImage(imageID));
+  });
   return Promise.all(promises).then((result) => {
     return result;
   });
 }
 
-const getImageFromResponse = (imageInfo)=>{
+const getImageFromResponse = (imageInfo) => {
   const nameAndVersion = imageInfo.RepoTags[0].split(':');
   const image = {
-      name: nameAndVersion[0],
-      version: nameAndVersion[1],
-      size: imageInfo.Size,
-      created: imageInfo.Created,
-      Id: imageInfo.Id,
+    name: nameAndVersion[0],
+    version: nameAndVersion[1],
+    size: imageInfo.Size,
+    created: imageInfo.Created,
+    Id: imageInfo.Id,
   };
   return image;
-}
+};
 
 async function list(req) {
   return new Promise((resolve, reject) => {
-    listImages( async function (err, images) {
+    listImages(async function (err, images) {
       if (err) {
         reject(getError('Error getting images. Check docker server.'));
       } else {
-        const token = req.get('token')
+        const token = req.get('token');
         const uid = await getUidFromToken(token);
         const isAdmin = await checkIsAdmin(uid);
         if (isAdmin) {
-          return resolve(getSuccess(images.map((container)=>(getImageFromResponse(container)))));
+          return resolve(getSuccess(images.map((container) => getImageFromResponse(container))));
         }
-        const allowedImages = await getImagesFromUid(uid)
-        const imagesResponse = images.filter((image)=>(
-            allowedImages.includes(image.id)
-        )).map((container)=>(getImageFromResponse(container)));
+        const allowedImages = await getImagesFromUid(uid);
+        const imagesResponse = images
+          .filter((image) => allowedImages.includes(image.id))
+          .map((container) => getImageFromResponse(container));
         return resolve(getSuccess(imagesResponse));
       }
     });

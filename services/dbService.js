@@ -1,13 +1,13 @@
 const firebase = require('firebase');
-const admin = require('firebase-admin')
+const admin = require('firebase-admin');
 
 admin.initializeApp({
   credential: admin.credential.cert({
     projectId: process.env.projectId,
     privateKey: process.env.privateKey,
     clientEmail: process.env.clientEmail,
-  })
-})
+  }),
+});
 const adminAuth = admin.auth();
 
 firebase.initializeApp({
@@ -27,14 +27,14 @@ const containerDBTemplate = {
   pauseTimes: 0,
   unpauseTimes: 0,
   restartTimes: 0,
-}
+};
 
 async function getUidFromToken(token) {
-  const decodedToken = await adminAuth.verifyIdToken(token)
+  const decodedToken = await adminAuth.verifyIdToken(token);
   if (!decodedToken.uid) {
-   return console.log('UID is not present in verified token');
+    return console.log('UID is not present in verified token');
   }
-  return decodedToken.uid
+  return decodedToken.uid;
 }
 
 async function getDocument(uid) {
@@ -56,7 +56,7 @@ async function getDocument(uid) {
 async function getContainersFromUid(uid) {
   const doc = await getDocument(uid);
   if (doc.exists) {
-    return doc.data()['containers']
+    return doc.data()['containers'];
   } else {
     return 'Error getting documents';
   }
@@ -65,7 +65,7 @@ async function getContainersFromUid(uid) {
 async function getImagesFromUid(uid) {
   const doc = await getDocument(uid);
   if (doc.exists) {
-    return doc.data()['images']
+    return doc.data()['images'];
   } else {
     return 'Error getting documents';
   }
@@ -73,27 +73,25 @@ async function getImagesFromUid(uid) {
 
 const Statuses = {
   start: 'startTimes',
-  stop:'stopTimes',
-  pause:'pauseTimes',
-  unpause:'unpauseTimes',
-  restart:'restartTimes',
-}
+  stop: 'stopTimes',
+  pause: 'pauseTimes',
+  unpause: 'unpauseTimes',
+  restart: 'restartTimes',
+};
 
-async function saveContainer(id){
-  return firestore.collection("containers").doc(id).set(
-      containerDBTemplate
-  )
+async function saveContainer(id) {
+  return firestore.collection('containers').doc(id).set(containerDBTemplate);
 }
 
 async function deleteContainerFromDB(id) {
-  return firestore.collection("containers").doc(id).delete()
+  return firestore.collection('containers').doc(id).delete();
 }
 
-async function incrementContainerStatusTime(id,status) {
+async function incrementContainerStatusTime(id, status) {
   const washingtonRef = firestore.collection('containers').doc(id);
 
   const res = await washingtonRef.update({
-    [Statuses[status]]: FieldValue.increment(1)
+    [Statuses[status]]: FieldValue.increment(1),
   });
 }
 

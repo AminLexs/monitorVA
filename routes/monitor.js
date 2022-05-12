@@ -2,12 +2,12 @@ const { Router } = require('express');
 const router = Router();
 const containersManager = require('../services/containersManager');
 const containersMonitor = require('../services/containersMonitor');
-const imagesService = require('../services/imagesService')
-const multer = require("multer");
+const imagesService = require('../services/imagesService');
+const multer = require('multer');
 
 function getResult(req) {
   req.body.ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  return {...req.body,...req.params,...req.query};
+  return { ...req.body, ...req.params, ...req.query };
 }
 
 /** deprecated
@@ -82,7 +82,6 @@ router.post('/containers/pause', function (req, res) {
   });
 });
 
-
 /**
  * POST /containers/unpause
  */
@@ -120,6 +119,15 @@ router.get('/container/logs', function (req, res) {
 });
 
 /**
+ * POST /container/exec
+ */
+router.post('/container/exec', function (req, res) {
+  containersManager.runExec(getResult(req)).then((result) => {
+    res.end(JSON.stringify(result));
+  });
+});
+
+/**
  * GET /images
  */
 router.get('/images', function (req, res) {
@@ -131,7 +139,7 @@ router.get('/images', function (req, res) {
 /**
  * POST /images
  */
-router.post('/images', multer({dest:"uploads"}).single("image"), function (req, res) {
+router.post('/images', multer({ dest: 'uploads' }).single('image'), function (req, res) {
   //console.log( '[request]:\n' + ' - path: /config/save\n - receive: ' + JSON.stringify(req.body) + '\n' )
   imagesService.addImage(req).then((result) => {
     res.end(JSON.stringify(result));
