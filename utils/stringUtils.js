@@ -3,4 +3,9 @@ function getStringWithoutStrangeSymbols(str) {
   return str.replace(regex, ' ');
 }
 
+function getShortContainersID(id) {
+  return id.slice(0, 12);
+}
+
 module.exports.getStringWithoutStrangeSymbols = getStringWithoutStrangeSymbols;
+module.exports.getShortContainersID = getShortContainersID;

@@ -64,6 +64,7 @@ function observeEvents() {
     });
   });
 }
+
 async function getContainerInfoDocker(id) {
   return (await getContainer(id)).inspect();
 }

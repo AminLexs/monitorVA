@@ -3,6 +3,7 @@ const router = Router();
 const containersManager = require('../services/containersManager');
 const containersMonitor = require('../services/containersMonitor');
 const imagesService = require('../services/imagesService');
+const pdfService = require('../services/pdfService');
 const multer = require('multer');
 
 function getResult(req) {
@@ -123,6 +124,15 @@ router.get('/container/logs', function (req, res) {
  */
 router.post('/container/exec', function (req, res) {
   containersManager.runExec(getResult(req)).then((result) => {
+    res.end(JSON.stringify(result));
+  });
+});
+
+/**
+ * POST /containers/pdf
+ */
+router.post('/containers/pdf', function (req, res) {
+  pdfService.getDataForPdf(getResult(req), req).then((result) => {
     res.end(JSON.stringify(result));
   });
 });

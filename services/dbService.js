@@ -79,6 +79,17 @@ const Statuses = {
   restart: 'restartTimes',
 };
 
+async function getStatsContainers(containersId) {
+  const promises = [];
+  containersId.forEach((id) => {
+    promises.push(firestore.collection('containers').doc(id).get());
+  });
+  return Promise.all(promises).then((result) => {
+    const res = result.map((snap, index) => ({ id: containersId[index], stats: snap.data() }));
+    return res;
+  });
+}
+
 async function saveContainer(id) {
   return firestore.collection('containers').doc(id).set(containerDBTemplate);
 }
@@ -105,3 +116,4 @@ module.exports.getUidFromToken = getUidFromToken;
 module.exports.incrementContainerStatusTime = incrementContainerStatusTime;
 module.exports.saveContainer = saveContainer;
 module.exports.deleteContainerFromDB = deleteContainerFromDB;
+module.exports.getStatsContainers = getStatsContainers;

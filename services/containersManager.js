@@ -9,6 +9,8 @@ const {
 } = require('./dockerService');
 const { getSuccess } = require('./responseService');
 
+const { getDataForPdf } = require('./pdfService');
+
 async function createContainerFromReq(params) {
   const dockerResult = await createContainer({
     Image: params.imageName,
