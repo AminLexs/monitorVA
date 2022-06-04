@@ -1,4 +1,6 @@
 const Docker = require('dockerode');
+const { sendNotification } = require('./notificationService');
+const { getObserversForContainer } = require('./dbService');
 const docker = new Docker();
 const { getStringWithoutStrangeSymbols } = require('../utils/stringUtils');
 
@@ -47,18 +49,38 @@ async function unPauseContainer(id) {
 }
 
 function observeEvents() {
-  const observingStatuses = ['start', 'stop', 'pause', 'unpause', 'restart'];
+  const statusesForStatistic = ['start', 'stop', 'pause', 'unpause', 'restart'];
+  const statusesForObserving = {
+    start: 'onStart',
+    stop: 'onStop',
+    restart: 'onRestart',
+    destroy: 'onDestroy',
+    die: 'onDie',
+    kill: 'onKill',
+  };
+
   return docker.getEvents({}, (err, stream) => {
     if (err) console.error(err);
     stream.on('data', async (data) => {
       const evt = JSON.parse(data.toString());
+      if (Object.keys(statusesForObserving).includes(evt.status) && evt.Type === 'container') {
+        sendNotification(
+          evt.id,
+          evt.Actor.Attributes.name,
+          evt.Actor.Attributes.image,
+          evt.status,
+          statusesForObserving[evt.status],
+          evt.time,
+        );
+      }
+
       if (evt.status === 'create' && evt.Type === 'container') {
         await saveContainer(evt.id);
       }
       if (evt.status === 'destroy' && evt.Type === 'container') {
         await deleteContainerFromDB(evt.id);
       }
-      if (observingStatuses.includes(evt.status) && evt.Type === 'container') {
+      if (statusesForStatistic.includes(evt.status) && evt.Type === 'container') {
         incrementContainerStatusTime(evt.id, evt.status);
       }
     });

@@ -17,18 +17,5 @@ async function getRole(params) {
   return getSuccess(role, message);
 }
 
-/*function Authenticate(params){
-	common.firebase.auth().signInWithEmailAndPassword(params.email, params.password)
-		.then(userCredential =>{
-			var user = userCredential.user;
-		})
-		.catch((error) => {
-		var errorCode = error.code;
-		var errorMessage = error.message;
-		// ...
-			getError(errorMessage)
-	})
-}*/
-
 module.exports.checkIsAdmin = checkIsAdmin;
 module.exports.getRole = getRole;

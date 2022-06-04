@@ -1,3 +1,6 @@
+const { getObserveSettingsByUidForContainer } = require('./dbService');
+const { getObserversForContainer } = require('./dbService');
+const { getUidFromToken } = require('./dbService');
 const {
   getContainer,
   createContainer,
@@ -9,6 +12,7 @@ const {
 } = require('./dockerService');
 const { getSuccess } = require('./responseService');
 
+const { addObserverForContainer } = require('./dbService');
 const { getDataForPdf } = require('./pdfService');
 
 async function createContainerFromReq(params) {
@@ -42,6 +46,7 @@ async function startContainers(params) {
   containersID.forEach((containerID) => {
     promises.push(startContainer(containerID));
   });
+
   return Promise.all(promises).then((result) => {
     return result;
   });
@@ -96,6 +101,7 @@ async function restartContainers(params) {
 async function pauseContainers(params) {
   const containersID = params.containersId;
   const promises = [];
+
   containersID.forEach((containerID) => {
     promises.push(pauseContainer(containerID));
   });
@@ -119,6 +125,19 @@ async function runExec(params) {
   return getSuccess(await runExecDocker(params.containerId, params.cmd));
 }
 
+async function updateObserverSettings(req, params) {
+  const token = req.get('token');
+  const uid = await getUidFromToken(token);
+  return getSuccess(await addObserverForContainer(params.containerId, uid, params.options));
+}
+
+async function getObserveSettingsUserForContainer(req) {
+  const token = req.get('token');
+  const uid = await getUidFromToken(token);
+  const containerId = req.get('containerId');
+  return getSuccess(await getObserveSettingsByUidForContainer(containerId, uid));
+}
+
 module.exports.createContainerFromReq = createContainerFromReq;
 module.exports.startContainers = startContainers;
 module.exports.restartContainers = restartContainers;
@@ -127,3 +146,5 @@ module.exports.deleteContainers = deleteContainers;
 module.exports.pauseContainers = pauseContainers;
 module.exports.unPauseContainers = unPauseContainers;
 module.exports.runExec = runExec;
+module.exports.updateObserverSettings = updateObserverSettings;
+module.exports.getObserveSettingsUserForContainer = getObserveSettingsUserForContainer;

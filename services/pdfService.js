@@ -77,6 +77,63 @@ function getDoughnutChartNowStateURL(containersStats, lang) {
   return chart.toURL();
 }
 
+function getMemoryAndCPUUsage(lang) {
+  // const dataset = containersStats.map((containerStats) => {
+  //   const stats = containerStats.stats;
+  //   return {
+  //     label: containerStats.name,
+  //     data: [stats.startTimes, stats.stopTimes, stats.pauseTimes, stats.unpauseTimes, stats.restartTimes],
+  //   };
+  // });
+  const isEng = lang === 'en';
+  const chart = ChartJSImage()
+    .chart({
+      type: 'bar',
+      data: {
+        labels: ['Байт'],
+        datasets: [
+          {
+            label: 'Used memory',
+            data: [400000],
+          },
+          {
+            label: 'Empty memory',
+            data: [200000],
+            backgroundColor: '#D3D3D3',
+          },
+        ],
+      },
+      options: {
+        title: {
+          display: true,
+          text: isEng ? 'History stats' : 'История статусов',
+        },
+        responsive: true,
+        scales: {
+          xAxes: [
+            {
+              stacked: true,
+            },
+          ],
+          yAxes: [
+            {
+              stacked: true,
+              ticks: {
+                beginAtZero: true,
+                min: 0,
+                max: 1000000,
+              },
+            },
+          ],
+        },
+      },
+    })
+    .backgroundColor('white')
+    .width(500) // 500px
+    .height(300); // 300px
+
+  return chart.toURL();
+}
 async function getDataForPdf(params, req) {
   const rawContainersStats = await getStatsContainers(params.containersId);
   const containersNames = await Promise.all(
@@ -89,7 +146,11 @@ async function getDataForPdf(params, req) {
   });
   const containersStatsNow = (await list(req)).data.reduce(
     (acc, curr) => {
-      return { ...acc, [curr.status]: ++acc[curr.status] };
+      if (params.containersId.includes(curr.Id)) {
+        return { ...acc, [curr.status]: ++acc[curr.status] };
+      } else {
+        return { ...acc };
+      }
     },
     {
       created: 0,

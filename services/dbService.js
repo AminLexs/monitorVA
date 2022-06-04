@@ -53,6 +53,31 @@ async function getDocument(uid) {
   return doc;
 }
 
+async function addObserverForContainer(containerId, uid, options) {
+  const washingtonRef = firestore.collection('containers').doc(containerId);
+
+  return await washingtonRef.update({
+    observers: { [uid]: options },
+  });
+}
+
+async function getObserversForContainer(containerId, event) {
+  const containerInfo = await firestore.collection('containers').doc(containerId).get();
+  const observers = containerInfo.data().observers;
+  const duplicatedEmails = Object.values(observers).reduce((acc, observerInfo) => {
+    return observerInfo[event] === true && observerInfo.isOn ? [...acc, observerInfo.emails] : acc;
+  }, []);
+
+  return Array.from(new Set(...duplicatedEmails));
+}
+
+async function getObserveSettingsByUidForContainer(containerId, uid) {
+  const containerInfo = await firestore.collection('containers').doc(containerId).get();
+  const observers = containerInfo.data().observers;
+
+  return observers[uid];
+}
+
 async function getContainersFromUid(uid) {
   const doc = await getDocument(uid);
   if (doc.exists) {
@@ -117,3 +142,6 @@ module.exports.incrementContainerStatusTime = incrementContainerStatusTime;
 module.exports.saveContainer = saveContainer;
 module.exports.deleteContainerFromDB = deleteContainerFromDB;
 module.exports.getStatsContainers = getStatsContainers;
+module.exports.addObserverForContainer = addObserverForContainer;
+module.exports.getObserversForContainer = getObserversForContainer;
+module.exports.getObserveSettingsByUidForContainer = getObserveSettingsByUidForContainer;

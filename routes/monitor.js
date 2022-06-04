@@ -167,6 +167,26 @@ router.delete('/images', function (req, res) {
 });
 
 /**
+ * PUT /containers/observers
+ */
+router.put('/containers/observers', function (req, res) {
+  //console.log( '[request]:\n' + ' - path: /config/save\n - receive: ' + JSON.stringify(req.body) + '\n' )
+  containersManager.updateObserverSettings(req, getResult(req)).then((result) => {
+    res.end(JSON.stringify(result));
+  });
+});
+
+/**
+ * GET /containers/observer
+ */
+router.get('/containers/observer', function (req, res) {
+  //console.log( '[request]:\n' + ' - path: /config/save\n - receive: ' + JSON.stringify(req.body) + '\n' )
+  containersManager.getObserveSettingsUserForContainer(req, getResult(req)).then((result) => {
+    res.end(JSON.stringify(result));
+  });
+});
+
+/**
  * POST /app
  */
 router.post('/app', function (req, res) {
