@@ -43,7 +43,7 @@ async function list(req) {
   });
 }
 
-async function getStatsContainers(arrayID) {
+async function getStatsContainersFromDocker(arrayID) {
   let tasks = arrayID.map((id) => {
     let container = getContainer(id);
     return new Promise((resolve, reject) => {
@@ -53,7 +53,9 @@ async function getStatsContainers(arrayID) {
           name: data.name.slice(1),
           //pid: app.pid,
           cpu: cpuUsage > 100 ? 100 : cpuUsage,
-          mem: data.memory_stats.usage, //process.memoryUsage.rss//
+          mem: data.memory_stats.usage,
+          maxUsageMem: data.memory_stats.max_usage,
+          memLimit: data.memory_stats.limit,
         });
       });
     });
@@ -83,7 +85,7 @@ async function monit(params) {
     if (activeContainers.includes(id)) return id;
   });
 
-  return getSuccess(await getStatsContainers(necessaryContainers));
+  return getSuccess(await getStatsContainersFromDocker(necessaryContainers));
 }
 
 async function getContainerInfo(req) {
@@ -100,3 +102,4 @@ module.exports.getContainerInfo = getContainerInfo;
 module.exports.getContainerLogs = getContainerLogs;
 module.exports.list = list;
 module.exports.monit = monit;
+module.exports.getStatsContainersFromDocker = getStatsContainersFromDocker;

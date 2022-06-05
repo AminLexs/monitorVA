@@ -93,15 +93,13 @@ function getHumanPeriod(time) {
 
   return result;
 }
+var kilobyte = 1024;
+var megabyte = kilobyte * 1024;
+var gigabyte = megabyte * 1024;
+var terabyte = gigabyte * 1024;
 
 function getHumanBytes(bytes, precision) {
   //console.log('bytes', bytes)
-
-  var kilobyte = 1024;
-  var megabyte = kilobyte * 1024;
-  var gigabyte = megabyte * 1024;
-  var terabyte = gigabyte * 1024;
-
   if (bytes >= 0 && bytes < kilobyte) {
     return bytes + ' B';
   } else if (bytes >= kilobyte && bytes < megabyte) {
@@ -117,7 +115,12 @@ function getHumanBytes(bytes, precision) {
   }
 }
 
+function getMegabytes(bytes) {
+  return (bytes / megabyte).toFixed(2);
+}
+
 module.exports.formatDate = formatDate;
 module.exports.listFormat = listFormat;
 module.exports.getHumanPeriod = getHumanPeriod;
 module.exports.getHumanBytes = getHumanBytes;
+module.exports.getMegabytes = getMegabytes;
