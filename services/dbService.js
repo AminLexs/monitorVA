@@ -1,13 +1,11 @@
 const firebase = require('firebase');
 const admin = require('firebase-admin');
-
+const { getDocs } = require('firebase/firestore');
+const serviceAccount = require(`../firebaseCrt/${process.env.crtFileName}`);
 admin.initializeApp({
-  credential: admin.credential.cert({
-    projectId: process.env.projectId,
-    privateKey: process.env.privateKey,
-    clientEmail: process.env.clientEmail,
-  }),
+  credential: admin.credential.cert(serviceAccount),
 });
+
 const adminAuth = admin.auth();
 
 firebase.initializeApp({
@@ -28,6 +26,17 @@ const containerDBTemplate = {
   unpauseTimes: 0,
   restartTimes: 0,
 };
+
+function getDocumentsFromCollection(collection) {
+  return firestore
+    .collection(collection)
+    .get()
+    .then((querySnapshot) => {
+      return querySnapshot.docs.map((doc) => {
+        return { id: doc.id, ...doc.data() };
+      });
+    });
+}
 
 async function getUidFromToken(token) {
   const decodedToken = await adminAuth.verifyIdToken(token);
@@ -136,6 +145,7 @@ async function incrementContainerStatusTime(id, status) {
 module.exports.FieldValue = FieldValue;
 module.exports.firestore = firestore;
 module.exports.firebase = firebase;
+module.exports.adminAuth = adminAuth;
 module.exports.getDocument = getDocument;
 module.exports.getContainersFromUid = getContainersFromUid;
 module.exports.getImagesFromUid = getImagesFromUid;
@@ -147,3 +157,4 @@ module.exports.getStatsContainers = getStatsContainers;
 module.exports.addObserverForContainer = addObserverForContainer;
 module.exports.getObserversForContainer = getObserversForContainer;
 module.exports.getObserveSettingsByUidForContainer = getObserveSettingsByUidForContainer;
+module.exports.getDocumentsFromCollection = getDocumentsFromCollection;

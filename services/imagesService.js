@@ -76,10 +76,13 @@ async function list(req) {
           return resolve(getSuccess(images.map((container) => getImageFromResponse(container))));
         }
         const allowedImages = await getImagesFromUid(uid);
-        const imagesResponse = images
-          .filter((image) => allowedImages.includes(image.id))
-          .map((container) => getImageFromResponse(container));
-        return resolve(getSuccess(imagesResponse));
+        if (allowedImages) {
+          const imagesResponse = images
+            .filter((image) => allowedImages.includes(image.id))
+            .map((container) => getImageFromResponse(container));
+          return resolve(getSuccess(imagesResponse));
+        }
+        resolve(getSuccess([]));
       }
     });
   });

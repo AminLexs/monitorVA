@@ -43,7 +43,7 @@ server.use(express.static(path.join((__dirname,'./public'))))
 server.use("/static", express.static('./static/'));
 server.use(monitorRoute)
 
-firebase.auth().signInWithEmailAndPassword("servermail@mail.ru","qwerty").then().catch(error=>{
+firebase.auth().signInWithEmailAndPassword(process.env.adminEmail,process.env.adminPassword).then().catch(error=>{
 	console.log("Error getting documents: ", error);
 })
 /**

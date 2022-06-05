@@ -1,3 +1,4 @@
+const { getDocumentsFromCollection } = require('./dbService');
 const { getError } = require('./responseService');
 const { getObserveSettingsByUidForContainer } = require('./dbService');
 const { getObserversForContainer } = require('./dbService');

@@ -34,10 +34,13 @@ async function list(req) {
           return resolve(getSuccess(containers.map((container) => getContainerFromResponse(container))));
         }
         const allowedContainers = await getContainersFromUid(uid);
-        const containersResponse = containers
-          .filter((container) => allowedContainers.includes(container.id))
-          .map((container) => getContainerFromResponse(container));
-        return resolve(getSuccess(containersResponse));
+        if (allowedContainers) {
+          const containersResponse = containers
+            .filter((container) => allowedContainers.includes(container.id))
+            .map((container) => getContainerFromResponse(container));
+          return resolve(getSuccess(containersResponse));
+        }
+        resolve(getSuccess([]));
       }
     });
   });

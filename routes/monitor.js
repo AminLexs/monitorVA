@@ -4,6 +4,7 @@ const containersManager = require('../services/containersManager');
 const containersMonitor = require('../services/containersMonitor');
 const imagesService = require('../services/imagesService');
 const pdfService = require('../services/pdfService');
+const authService = require('../services/authService');
 const multer = require('multer');
 
 function getResult(req) {
@@ -197,18 +198,51 @@ router.get('/containers/observer', function (req, res) {
 });
 
 /**
- * POST /app
+ * GET /users
  */
-router.post('/app', function (req, res) {
-  //console.log( '[request]:\n' + ' - path: /app\n - receive: ' + JSON.stringify(req.body) + '\n' )
-  res.end(JSON.stringify(main.set(getResult(req))));
+router.get('/users', function (req, res) {
+  //console.log( '[request]:\n' + ' - path: /config/save\n - receive: ' + JSON.stringify(req.body) + '\n' )
+  authService.getUsers(req).then((result) => {
+    res.end(JSON.stringify(result));
+  });
 });
 
 /**
- * POST /role
+ * PUT /user
  */
-router.post('/config/setemail', function (req, res) {
-  main.SetEmail(getResult(req)).then((result) => {
+router.put('/user', function (req, res) {
+  //console.log( '[request]:\n' + ' - path: /config/save\n - receive: ' + JSON.stringify(req.body) + '\n' )
+  authService.changeUserRole(getResult(req), req).then((result) => {
+    res.end(JSON.stringify(result));
+  });
+});
+
+/**
+ * POST /user
+ */
+router.post('/user', function (req, res) {
+  //console.log( '[request]:\n' + ' - path: /config/save\n - receive: ' + JSON.stringify(req.body) + '\n' )
+  authService.createUser(getResult(req), req).then((result) => {
+    res.end(JSON.stringify(result));
+  });
+});
+
+/**
+ * DELETE /user
+ */
+router.delete('/user', function (req, res) {
+  //console.log( '[request]:\n' + ' - path: /config/save\n - receive: ' + JSON.stringify(req.body) + '\n' )
+  authService.deleteUser(getResult(req), req).then((result) => {
+    res.end(JSON.stringify(result));
+  });
+});
+
+/**
+ * GET /user/role
+ */
+router.get('/user/role', function (req, res) {
+  //console.log( '[request]:\n' + ' - path: /config/save\n - receive: ' + JSON.stringify(req.body) + '\n' )
+  authService.getRoleFromRequest(req).then((result) => {
     res.end(JSON.stringify(result));
   });
 });
