@@ -167,6 +167,16 @@ router.delete('/images', function (req, res) {
 });
 
 /**
+ * Get /images/checkname
+ */
+router.get('/images/checkname', function (req, res) {
+  //console.log( '[request]:\n' + ' - path: /config/save\n - receive: ' + JSON.stringify(req.body) + '\n' )
+  imagesService.checkName(req).then((result) => {
+    res.end(JSON.stringify(result));
+  });
+});
+
+/**
  * PUT /containers/observers
  */
 router.put('/containers/observers', function (req, res) {

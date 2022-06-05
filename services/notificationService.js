@@ -5,7 +5,7 @@ const { htmlForMessage } = require('../utils/htmlForMessage');
 
 async function sendNotification(containerId, containerName, imageName, status, event, timeWhenChange) {
   const emails = await getObserversForContainer(containerId, event);
-  if (emails.length !== 0) {
+  if (emails && emails.length !== 0) {
     let smtpTransport;
     try {
       smtpTransport = nodemailer.createTransport({

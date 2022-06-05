@@ -1,7 +1,7 @@
 const { getUidFromToken } = require('./dbService');
 const { getContainersFromUid } = require('./dbService');
 const { calcCPUPercent } = require('../utils/calculationUtils');
-const { getContainer, createContainer } = require('./dockerService');
+const { getContainer } = require('./dockerService');
 const { getSuccess } = require('./responseService');
 const { getError } = require('./responseService');
 const { listContainers, getContainerInfoDocker, getContainerLogsDocker } = require('./dockerService');
@@ -13,8 +13,8 @@ const getContainerFromResponse = (containerInfo) => {
     name: containerInfo.Names[0],
     image: containerInfo.Image,
     status: containerInfo.State,
-    publicPort: containerInfo.Ports[0] !== undefined ? containerInfo.Ports[0].PublicPort : undefined,
-    privatePort: containerInfo.Ports[0] !== undefined ? containerInfo.Ports[0].PrivatePort : undefined,
+    publicPort: containerInfo.Ports[0] !== undefined ? containerInfo.Ports[1].PublicPort : undefined,
+    privatePort: containerInfo.Ports[0] !== undefined ? containerInfo.Ports[1].PrivatePort : undefined,
     created: containerInfo.Created,
     Id: containerInfo.Id,
   };
@@ -100,4 +100,3 @@ module.exports.getContainerInfo = getContainerInfo;
 module.exports.getContainerLogs = getContainerLogs;
 module.exports.list = list;
 module.exports.monit = monit;
-module.exports.createContainer = createContainer;

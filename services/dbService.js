@@ -62,13 +62,15 @@ async function addObserverForContainer(containerId, uid, options) {
 }
 
 async function getObserversForContainer(containerId, event) {
-  const containerInfo = await firestore.collection('containers').doc(containerId).get();
-  const observers = containerInfo.data().observers;
-  const duplicatedEmails = Object.values(observers).reduce((acc, observerInfo) => {
-    return observerInfo[event] === true && observerInfo.isOn ? [...acc, observerInfo.emails] : acc;
-  }, []);
+  try {
+    const containerInfo = await firestore.collection('containers').doc(containerId).get();
+    const observers = containerInfo.data().observers;
+    const duplicatedEmails = Object.values(observers).reduce((acc, observerInfo) => {
+      return observerInfo[event] === true && observerInfo.isOn ? [...acc, observerInfo.emails] : acc;
+    }, []);
 
-  return Array.from(new Set(...duplicatedEmails));
+    return Array.from(new Set(...duplicatedEmails));
+  } catch (err) {}
 }
 
 async function getObserveSettingsByUidForContainer(containerId, uid) {

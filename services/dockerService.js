@@ -37,15 +37,21 @@ function removeImage(id) {
 }
 
 async function restartContainer(id) {
-  return (await getContainer(id)).restart();
+  try {
+    return (await getContainer(id)).restart();
+  } catch (err) {}
 }
 
 async function pauseContainer(id) {
-  return (await getContainer(id)).pause();
+  try {
+    return (await getContainer(id)).pause();
+  } catch (err) {}
 }
 
 async function unPauseContainer(id) {
-  return (await getContainer(id)).unpause();
+  try {
+    return (await getContainer(id)).unpause();
+  } catch (err) {}
 }
 
 function observeEvents() {
@@ -63,6 +69,10 @@ function observeEvents() {
     if (err) console.error(err);
     stream.on('data', async (data) => {
       const evt = JSON.parse(data.toString());
+
+      if (evt.status === 'create' && evt.Type === 'container') {
+        await saveContainer(evt.id);
+      }
       if (Object.keys(statusesForObserving).includes(evt.status) && evt.Type === 'container') {
         sendNotification(
           evt.id,
@@ -72,10 +82,6 @@ function observeEvents() {
           statusesForObserving[evt.status],
           evt.time,
         );
-      }
-
-      if (evt.status === 'create' && evt.Type === 'container') {
-        await saveContainer(evt.id);
       }
       if (evt.status === 'destroy' && evt.Type === 'container') {
         await deleteContainerFromDB(evt.id);

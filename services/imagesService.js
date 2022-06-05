@@ -5,31 +5,35 @@ const { getError, getSuccess } = require('./responseService');
 const { docker, buildImage, removeImage } = require('../services/dockerService');
 
 async function addImage(req) {
-  const filedata = req.file;
-  const imageName = req.get('imageName');
+  try {
+    const filedata = req.file;
+    const imageName = req.get('imageName');
 
-  const stream = await buildImage(filedata.path, { t: imageName }, function (err, response) {
-    if (err) {
-      console.log(err);
-    }
-  });
-  await new Promise((resolve, reject) => {
-    docker.modem.followProgress(stream, (err, res) => (err ? reject(err) : resolve(res)));
-  });
-  // await firestore
-  //   .collection('users')
-  //   .doc(params.uid)
-  //   .update({
-  //     images: FieldValue.arrayUnion(params.app.name),
-  //   })
-  //   .then(() => {
-  //     console.log('Document updated ');
-  //   })
-  //   .catch(function (error) {
-  //     console.log('Error getting documents: ', error);
-  //   });
-  //
-  return getSuccess({}, 'Image succesfully added');
+    const stream = await buildImage(filedata.path, { t: imageName }, function (err, response) {
+      if (err) {
+        console.log(err);
+      }
+    });
+    await new Promise((resolve, reject) => {
+      docker.modem.followProgress(stream, (err, res) => (err ? reject(err) : resolve(res)));
+    });
+    // await firestore
+    //   .collection('users')
+    //   .doc(params.uid)
+    //   .update({
+    //     images: FieldValue.arrayUnion(params.app.name),
+    //   })
+    //   .then(() => {
+    //     console.log('Document updated ');
+    //   })
+    //   .catch(function (error) {
+    //     console.log('Error getting documents: ', error);
+    //   });
+    //
+    return getSuccess({}, 'Image succesfully added');
+  } catch (err) {
+    return getError(err.message);
+  }
 }
 
 async function deleteImage(id) {
@@ -81,6 +85,20 @@ async function list(req) {
   });
 }
 
+async function checkName(req) {
+  const imageName = req.get('imageName');
+  return new Promise((resolve, reject) => {
+    listImages(async function (err, response) {
+      if (err) {
+        reject(getError('Error getting images. Check docker server.'));
+      } else {
+        const imagesNames = response.map((container) => getImageFromResponse(container)).map((image) => image.name);
+        resolve(imagesNames.includes(imageName));
+      }
+    });
+  });
+}
+
 // if (JSON.parse(params.imagelist)) {
 //   return new Promise((resolve, reject) => {
 //     listImages(function (err, images) {
@@ -109,3 +127,4 @@ async function list(req) {
 module.exports.addImage = addImage;
 module.exports.deleteImages = deleteImages;
 module.exports.list = list;
+module.exports.checkName = checkName;
