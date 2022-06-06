@@ -56,10 +56,12 @@ async function createUser(params, req) {
           })
           .then(async (userRecord) => {
             resolve(
-              await firestore.collection('users').doc(userRecord.uid).set({
-                mail: params.email,
-                role: 'user',
-              }),
+              getSuccess(
+                await firestore.collection('users').doc(userRecord.uid).set({
+                  mail: params.email,
+                  role: 'user',
+                }),
+              ),
             );
           })
           .catch((error) => {
