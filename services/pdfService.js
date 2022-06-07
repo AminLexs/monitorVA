@@ -83,22 +83,15 @@ function getMemoryAndCPUUsage(containersStats, lang) {
   const isEng = lang === 'en';
   const memoryChartsURLs = containersStats.map((containerStats) => {
     if (containerStats.mem) {
-      console.log(typeof +getMegabytes(containerStats.mem));
-      console.log(typeof +getMegabytes(containerStats.maxUsageMem - containerStats.mem));
-      console.log(typeof +getMegabytes(containerStats.memLimit));
       const chartMem = ChartJSImage()
         .chart({
-          type: 'bar',
+          type: 'pie',
           data: {
-            labels: [isEng ? 'Megabyte' : 'Мегабайт'],
+            labels: isEng ? ['Used memory', 'Free memory'] : ['Использовано памяти', 'Свободно памяти'],
             datasets: [
               {
-                label: isEng ? 'Used memory' : 'Использовано памяти',
-                data: [+getMegabytes(containerStats.mem)],
-              },
-              {
-                label: isEng ? 'Max memory usage' : 'Максимально использовано памяти',
-                data: [+getMegabytes(containerStats.maxUsageMem - containerStats.mem)],
+                label: 'Dataset 1',
+                data: [+getMegabytes(containerStats.mem), +getMegabytes(containerStats.memLimit - containerStats.mem)],
               },
             ],
           },
@@ -107,29 +100,12 @@ function getMemoryAndCPUUsage(containersStats, lang) {
               display: true,
               text: isEng ? 'Memory usage' : 'Использование памяти',
             },
-            responsive: true,
-            scales: {
-              xAxes: [
-                {
-                  stacked: true,
-                },
-              ],
-              yAxes: [
-                {
-                  stacked: true,
-                  ticks: {
-                    beginAtZero: true,
-                    min: 0,
-                    max: +getMegabytes(containerStats.memLimit),
-                  },
-                },
-              ],
-            },
           },
         })
         .backgroundColor('white')
         .width(500) // 500px
         .height(300); // 300px
+
       return chartMem.toURL();
     }
   });
@@ -186,6 +162,9 @@ function getMemoryAndCPUUsage(containersStats, lang) {
           name: containerStats.name,
           cpuChartURL: cpuChartsURLs[index],
           memoryChartURL: memoryChartsURLs[index],
+          usageMemory: +getMegabytes(containerStats.mem),
+          freeMemory: +getMegabytes(containerStats.memLimit - containerStats.mem),
+          usageCpu: (+containerStats.cpu).toFixed(2),
         };
       }
     })
@@ -250,6 +229,9 @@ async function getDataForPdf(params, req) {
           return Object.assign(containerInfo, {
             cpuChartURL: foundContainersURLs.cpuChartURL,
             memoryChartURL: foundContainersURLs.memoryChartURL,
+            usageCpu: foundContainersURLs.usageCpu,
+            usageMemory: foundContainersURLs.usageMemory,
+            freeMemory: foundContainersURLs.freeMemory,
           });
         }
         return containerInfo;
