@@ -73,13 +73,17 @@ async function list(req) {
         const uid = await getUidFromToken(token);
         const isAdmin = await checkIsAdmin(uid);
         if (isAdmin) {
-          return resolve(getSuccess(images.map((container) => getImageFromResponse(container))));
+          return resolve(getSuccess(images.map((container) => getImageFromResponse(container)).filter((image)=>
+              image.name !== 'node'
+          )));
         }
         const allowedImages = await getImagesFromUid(uid);
         if (allowedImages) {
           const imagesResponse = images
             .filter((image) => allowedImages.includes(image.id))
-            .map((container) => getImageFromResponse(container));
+            .map((container) => getImageFromResponse(container)).filter((image)=>
+              image.name !== 'node'
+              );
           return resolve(getSuccess(imagesResponse));
         }
         resolve(getSuccess([]));

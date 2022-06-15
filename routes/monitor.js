@@ -39,6 +39,16 @@ router.put('/containers', function (req, res) {
 });
 
 /**
+ * POST /container
+ */
+router.post('/container', multer({ dest: 'uploads' }).single('settings'),function (req, res) {
+  //console.log( '[request]:\n' + ' - path: /config/save\n - receive: ' + JSON.stringify(req.body) + '\n' )
+  containersManager.createContainerFromFile(req).then((result) => {
+    res.end(JSON.stringify(result));
+  });
+});
+
+/**
  * DELETE /containers
  */
 router.delete('/containers', function (req, res) {
@@ -125,6 +135,33 @@ router.get('/container/logs', function (req, res) {
  */
 router.post('/container/exec', function (req, res) {
   containersManager.runExec(getResult(req)).then((result) => {
+    res.end(JSON.stringify(result));
+  });
+});
+
+/**
+ * PUT /container/update
+ */
+router.put('/container/update', function (req, res) {
+  containersManager.updateContainerFromReq(getResult(req), req).then((result) => {
+    res.end(JSON.stringify(result));
+  });
+});
+
+/**
+ * POST /container/recreate
+ */
+router.post('/container/recreate', function (req, res) {
+  containersManager.recreateContainer(getResult(req)).then((result) => {
+    res.end(JSON.stringify(result));
+  });
+});
+
+/**
+ * PUT /container/name
+ */
+router.put('/container/name', function (req, res) {
+  containersManager.renameContainerFromReq(getResult(req), req).then((result) => {
     res.end(JSON.stringify(result));
   });
 });

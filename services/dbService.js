@@ -83,10 +83,13 @@ async function getObserversForContainer(containerId, event) {
 }
 
 async function getObserveSettingsByUidForContainer(containerId, uid) {
-  const containerInfo = await firestore.collection('containers').doc(containerId).get();
-  const observers = containerInfo.data().observers;
-
-  return observers[uid];
+  try{
+    const containerInfo = await firestore.collection('containers').doc(containerId).get();
+    const observers = containerInfo.data().observers;
+    return observers[uid];
+  }catch (e){
+    console.log('Error get observe settings: '+e.message)
+  }
 }
 
 async function getContainersFromUid(uid) {

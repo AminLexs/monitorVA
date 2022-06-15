@@ -67,7 +67,7 @@ function observeEvents() {
 
   return docker.getEvents({}, (err, stream) => {
     if (err) console.error(err);
-    stream.on('data', async (data) => {
+    stream.on('data', async (data) => {  //TODO: there break when docker off
       const evt = JSON.parse(data.toString());
 
       if (evt.status === 'create' && evt.Type === 'container') {
@@ -150,6 +150,24 @@ async function runExecDocker(id, cmd) {
     });
 }
 
+async function updateContainer(id, params) {
+  try {
+    const container = await getContainer(id);
+    return await container.update(params)
+  }catch (err){
+    console.log(err.message)
+  }
+}
+
+async function renameContainerDocker(id, name) {
+  try {
+    const container = await getContainer(id);
+    return await container.rename({name})
+  }catch (err){
+    console.log(err.message)
+  }
+}
+
 module.exports.docker = docker;
 module.exports.getContainer = getContainer;
 module.exports.listImages = listImages;
@@ -165,3 +183,5 @@ module.exports.observeEvents = observeEvents;
 module.exports.getContainerInfoDocker = getContainerInfoDocker;
 module.exports.getContainerLogsDocker = getContainerLogsDocker;
 module.exports.runExecDocker = runExecDocker;
+module.exports.updateContainer = updateContainer;
+module.exports.renameContainerDocker = renameContainerDocker;
