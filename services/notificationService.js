@@ -24,7 +24,7 @@ async function sendNotification(containerId, containerName, imageName, status, e
     let mailOptions = {
       from: process.env.emailAuthUser, // sender address
       to: emails, // list of receivers
-      subject: 'Приложение изменило статус', // Subject line
+      subject: 'Контейнер изменил статус', // Subject line
       html: htmlForMessage(
         getShortContainersID(containerId),
         containerName,
@@ -44,4 +44,45 @@ async function sendNotification(containerId, containerName, imageName, status, e
   }
 }
 
+async function sendReportToEmails(filePath, emails) {
+  if (emails && emails.length !== 0) {
+    let smtpTransport;
+    try {
+      smtpTransport = nodemailer.createTransport({
+        host: 'smtp.mail.ru',
+        port: 465,
+        secure: true, // true for 465, false for other ports 587
+        auth: {
+          user: process.env.emailAuthUser,
+          pass: process.env.emailAuthPassword,
+        },
+      });
+    } catch (e) {
+      return console.log('Error: ' + e.name + ':' + e.message);
+    }
+
+    let mailOptions = {
+      from: process.env.emailAuthUser, // sender address
+      to: emails, // list of receivers
+      subject: 'Новый отчёт', // Subject line
+      attachments: [
+        {
+          // file on disk as an attachment
+          filename: 'Containers_Report.pdf',
+          path: filePath, // stream this file
+        },
+      ],
+    };
+
+    smtpTransport.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        return console.log(error);
+      } else {
+        //success sent
+      }
+    });
+  }
+}
+
 module.exports.sendNotification = sendNotification;
+module.exports.sendReportToEmails = sendReportToEmails;

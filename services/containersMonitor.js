@@ -36,7 +36,7 @@ async function list(req) {
         const allowedContainers = await getContainersFromUid(uid);
         if (allowedContainers) {
           const containersResponse = containers
-            .filter((container) => allowedContainers.includes(container.id))
+            .filter((container) => allowedContainers.includes(container.Id))
             .map((container) => getContainerFromResponse(container));
           return resolve(getSuccess(containersResponse));
         }

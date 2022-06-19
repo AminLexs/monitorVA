@@ -23,9 +23,14 @@ router.get('/', function (req, res) {
  * GET /containers
  */
 router.get('/containers', function (req, res) {
-  containersMonitor.list(req).then((result) => {
-    res.end(JSON.stringify(result));
-  });
+  containersMonitor
+    .list(req)
+    .then((result) => {
+      res.end(JSON.stringify(result));
+    })
+    .catch((err) => {
+      res.status(500).end(JSON.stringify(err));
+    });
 });
 
 /**
@@ -33,7 +38,7 @@ router.get('/containers', function (req, res) {
  */
 router.put('/containers', function (req, res) {
   //console.log( '[request]:\n' + ' - path: /config/save\n - receive: ' + JSON.stringify(req.body) + '\n' )
-  containersManager.createContainerFromReq(getResult(req)).then((result) => {
+  containersManager.createContainerFromReq(getResult(req), req).then((result) => {
     res.end(JSON.stringify(result));
   });
 });
@@ -41,9 +46,19 @@ router.put('/containers', function (req, res) {
 /**
  * POST /container
  */
-router.post('/container', multer({ dest: 'uploads' }).single('settings'),function (req, res) {
+router.post('/container', multer({ dest: 'uploads' }).single('settings'), function (req, res) {
   //console.log( '[request]:\n' + ' - path: /config/save\n - receive: ' + JSON.stringify(req.body) + '\n' )
   containersManager.createContainerFromFile(req).then((result) => {
+    res.end(JSON.stringify(result));
+  });
+});
+
+/**
+ * POST /containers/sendreport
+ */
+router.post('/containers/sendreport', multer({ dest: 'uploads' }).single('pdf'), function (req, res) {
+  //console.log( '[request]:\n' + ' - path: /config/save\n - receive: ' + JSON.stringify(req.body) + '\n' )
+  containersManager.sendReport(req).then((result) => {
     res.end(JSON.stringify(result));
   });
 });

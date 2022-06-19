@@ -3,11 +3,14 @@ const { getImagesFromUid, getUidFromToken } = require('./dbService');
 const { checkIsAdmin } = require('./authService');
 const { getError, getSuccess } = require('./responseService');
 const { docker, buildImage, removeImage } = require('../services/dockerService');
+const { firestore, FieldValue } = require('./dbService');
 
 async function addImage(req) {
   try {
     const filedata = req.file;
     const imageName = req.get('imageName');
+    const token = req.get('token');
+    const uid = await getUidFromToken(token);
 
     const stream = await buildImage(filedata.path, { t: imageName }, function (err, response) {
       if (err) {
@@ -15,21 +18,22 @@ async function addImage(req) {
       }
     });
     await new Promise((resolve, reject) => {
-      docker.modem.followProgress(stream, (err, res) => (err ? reject(err) : resolve(res)));
+      docker.modem.followProgress(stream, async (err, res) => {
+        try {
+          if (err) return reject(err);
+          await firestore
+            .collection('users')
+            .doc(uid)
+            .update({
+              images: FieldValue.arrayUnion(res[res.length - 3].aux.ID),
+            });
+          resolve(res);
+        } catch (err) {
+          console.log(err.message);
+        }
+      });
     });
-    // await firestore
-    //   .collection('users')
-    //   .doc(params.uid)
-    //   .update({
-    //     images: FieldValue.arrayUnion(params.app.name),
-    //   })
-    //   .then(() => {
-    //     console.log('Document updated ');
-    //   })
-    //   .catch(function (error) {
-    //     console.log('Error getting documents: ', error);
-    //   });
-    //
+
     return getSuccess({}, 'Image succesfully added');
   } catch (err) {
     return getError(err.message);
@@ -73,17 +77,18 @@ async function list(req) {
         const uid = await getUidFromToken(token);
         const isAdmin = await checkIsAdmin(uid);
         if (isAdmin) {
-          return resolve(getSuccess(images.map((container) => getImageFromResponse(container)).filter((image)=>
-              image.name !== 'node'
-          )));
+          return resolve(
+            getSuccess(
+              images.map((container) => getImageFromResponse(container)).filter((image) => image.name !== 'node'),
+            ),
+          );
         }
         const allowedImages = await getImagesFromUid(uid);
         if (allowedImages) {
           const imagesResponse = images
-            .filter((image) => allowedImages.includes(image.id))
-            .map((container) => getImageFromResponse(container)).filter((image)=>
-              image.name !== 'node'
-              );
+            .filter((image) => allowedImages.includes(image.Id))
+            .map((container) => getImageFromResponse(container))
+            .filter((image) => image.name !== 'node');
           return resolve(getSuccess(imagesResponse));
         }
         resolve(getSuccess([]));
