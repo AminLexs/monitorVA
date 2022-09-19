@@ -1,5 +1,5 @@
 # MonitorVA
-This is web application for monitoring server docker containers (Client).
+This is web application for monitoring server docker containers (Backend).
 ## Setup
 1) Define Firebase credentials (admin and web).
 2) Define email and password for notification.
